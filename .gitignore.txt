@@ -1,0 +1,58 @@
+## Build files
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+
+## Visual Studio cache
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Build output
+*.exe
+*.dll
+*.pdb
+*.cache
+*.log
+
+## NuGet packages
+*.nupkg
+packages/
+*.snupkg
+.nuget/
+
+## Debug / Release folders
+Debug/
+Release/
+x64/
+x86/
+build/
+[Bb]uild/
+
+## Resharper / Rider
+_ReSharper*/
+*.DotSettings.user
+.idea/
+
+## Publish folder
+publish/
+
+## Auto-generated files
+*.Designer.cs
+*.generated.cs
+*.g.cs
+*.g.i.cs
+
+## OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+## Others
+*.tmp
+*.bak
+*.swp
+*.DS_Store
