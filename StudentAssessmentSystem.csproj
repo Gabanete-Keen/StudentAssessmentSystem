@@ -57,6 +57,9 @@
     </Compile>
     <Compile Include="Models\Academic\Section.cs" />
     <Compile Include="Models\Academic\Subject.cs" />
+    <Compile Include="Models\Assessment\MultipleChoiceQuestion.cs" />
+    <Compile Include="Models\Assessment\Question.cs" />
+    <Compile Include="Models\Assessment\QuestionChoice.cs" />
     <Compile Include="Models\Assessment\Test.cs" />
     <Compile Include="Models\Enums\CognitiveLevel.cs" />
     <Compile Include="Models\Enums\DifficultyLevel.cs" />
