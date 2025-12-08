@@ -61,10 +61,14 @@
     <Compile Include="Models\Assessment\Question.cs" />
     <Compile Include="Models\Assessment\QuestionChoice.cs" />
     <Compile Include="Models\Assessment\Test.cs" />
+    <Compile Include="Models\Assessment\TestInstance.cs" />
     <Compile Include="Models\Enums\CognitiveLevel.cs" />
     <Compile Include="Models\Enums\DifficultyLevel.cs" />
     <Compile Include="Models\Enums\TestType.cs" />
     <Compile Include="Models\Enums\UserRole.cs" />
+    <Compile Include="Models\Results\QuestionStatistics.cs" />
+    <Compile Include="Models\Results\StudentAnswer.cs" />
+    <Compile Include="Models\Results\TestResult.cs" />
     <Compile Include="Models\Users\Admin.cs" />
     <Compile Include="Models\Users\Student.cs" />
     <Compile Include="Models\Users\Teacher.cs" />
