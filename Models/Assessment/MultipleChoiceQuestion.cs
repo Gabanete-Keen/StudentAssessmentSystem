@@ -36,18 +36,18 @@ namespace StudentAssessmentSystem.Models.Assessment
             return false;
         }
 
-        
+
         /// POLYMORPHISM: Implements abstract method
         /// Returns the correct choice(s)
-      
+
         public override object GetCorrectAnswer()
         {
             return Choices?.FirstOrDefault(c => c.IsCorrect);
         }
 
-        
+
         /// Override validation to include choices check
-       
+
         public override bool IsValid()
         {
             return base.IsValid() &&
@@ -56,7 +56,7 @@ namespace StudentAssessmentSystem.Models.Assessment
                    Choices.Any(c => c.IsCorrect);  // At least 1 correct answer
         }
 
-     
+
         /// Adds a choice to this question
         /// ENCAPSULATION: Controlled way to add choices
         public void AddChoice(string choiceText, bool isCorrect, int orderNumber = 0)
@@ -69,4 +69,5 @@ namespace StudentAssessmentSystem.Models.Assessment
                 OrderNumber = orderNumber > 0 ? orderNumber : Choices.Count + 1
             });
         }
+    }
 }

@@ -32,7 +32,7 @@ namespace StudentAssessmentSystem.Models.Assessment
 
         /// ABSTRACTION: Each question type must implement how to check answers
         /// POLYMORPHISM: MultipleChoice, TrueFalse implement this differently
-    
+
         /// <param name="studentAnswer">The answer provided by the student</param>
         /// <returns>True if answer is correct</returns>
         public abstract bool CheckAnswer(object studentAnswer);
@@ -47,4 +47,5 @@ namespace StudentAssessmentSystem.Models.Assessment
             return !string.IsNullOrWhiteSpace(QuestionText) &&
                    PointValue > 0;
         }
+    }
 }
