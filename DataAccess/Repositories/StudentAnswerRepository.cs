@@ -1,0 +1,107 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using StudentAssessmentSystem.Models.Results;
+using MySql.Data.MySqlClient;
+// Purpose: Gets student answers from MySQL database
+// Connected to: StudentAnswer model, ItemAnalyzer  
+namespace StudentAssessmentSystem.DataAccess.Repositories
+{
+    // Repository for StudentAnswer database operations
+    public class StudentAnswerRepository
+    {
+        // Gets all answers for a specific question in a test instance
+        // Used for item analysis
+        public List<StudentAnswer> GetAnswersForQuestion(int questionId, int testInstanceId)
+        {
+            List<StudentAnswer> answers = new List<StudentAnswer>();
+
+            try
+            {
+                using (var conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+
+                    string query = @"
+                        SELECT sa.* 
+                        FROM StudentAnswers sa
+                        INNER JOIN TestResults tr ON sa.ResultId = tr.ResultId
+                        WHERE sa.QuestionId = @QuestionId 
+                        AND tr.InstanceId = @InstanceId
+                        AND tr.IsCompleted = TRUE";
+
+                    using (var cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@QuestionId", questionId);
+                        cmd.Parameters.AddWithValue("@InstanceId", testInstanceId);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                answers.Add(new StudentAnswer
+                                {
+                                    AnswerId = reader.GetInt32("AnswerId"),
+                                    ResultId = reader.GetInt32("ResultId"),
+                                    QuestionId = reader.GetInt32("QuestionId"),
+                                    SelectedChoiceId = reader.IsDBNull(reader.GetOrdinal("SelectedChoiceId"))
+                                        ? (int?)null
+                                        : reader.GetInt32("SelectedChoiceId"),
+                                    IsCorrect = reader.GetBoolean("IsCorrect"),
+                                    PointsEarned = reader.GetInt32("PointsEarned")
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error getting answers: {ex.Message}", ex);
+            }
+
+            return answers;
+        }
+
+        /// <summary>
+        /// Adds a student answer to database
+        /// </summary>
+        public int Add(StudentAnswer answer)
+        {
+            try
+            {
+                using (var conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+
+                    string query = @"
+                        INSERT INTO StudentAnswers 
+                        (ResultId, QuestionId, SelectedChoiceId, AnswerText, IsCorrect, PointsEarned, TimeSpentSeconds)
+                        VALUES 
+                        (@ResultId, @QuestionId, @SelectedChoiceId, @AnswerText, @IsCorrect, @PointsEarned, @TimeSpentSeconds);
+                        SELECT LAST_INSERT_ID();";
+
+                    using (var cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@ResultId", answer.ResultId);
+                        cmd.Parameters.AddWithValue("@QuestionId", answer.QuestionId);
+                        cmd.Parameters.AddWithValue("@SelectedChoiceId",
+                            answer.SelectedChoiceId.HasValue ? (object)answer.SelectedChoiceId.Value : DBNull.Value);
+                        cmd.Parameters.AddWithValue("@AnswerText", answer.AnswerText ?? "");
+                        cmd.Parameters.AddWithValue("@IsCorrect", answer.IsCorrect);
+                        cmd.Parameters.AddWithValue("@PointsEarned", answer.PointsEarned);
+                        cmd.Parameters.AddWithValue("@TimeSpentSeconds", answer.TimeSpentSeconds);
+
+                        return Convert.ToInt32(cmd.ExecuteScalar());
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error adding answer: {ex.Message}", ex);
+            }
+        }
+    }
+}

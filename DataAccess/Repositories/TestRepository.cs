@@ -7,6 +7,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MySql.Data.MySqlClient;
+using StudentAssessmentSystem.Models.Assessment;
+using StudentAssessmentSystem.Models.Enums;
+
 // Purpose: Handles all MySQL database operations for Tests
 // Connected to: Test model, TestManager
 namespace StudentAssessmentSystem.DataAccess.Repositories
@@ -93,7 +97,50 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
             }
         }
 
-        
+        public Test GetTestByInstanceId(int testInstanceId)
+        {
+            try
+            {
+                using (var conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+
+                    // First, get the TestId from TestInstances table
+                    string query = @"SELECT t.* 
+                                   FROM Tests t
+                                   INNER JOIN TestInstances ti ON t.TestId = ti.TestId
+                                   WHERE ti.InstanceId = @InstanceId";
+
+                    using (var cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@InstanceId", testInstanceId);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                Test test = MapReaderToTest(reader);
+
+                                // Close reader before loading questions
+                                reader.Close();
+
+                                // Load questions for this test
+                                var questionRepo = new QuestionRepository();
+                                test.Questions = questionRepo.GetQuestionsByTest(test.TestId);
+
+                                return test;
+                            }
+                        }
+                    }
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error getting test by instance: {ex.Message}", ex);
+            }
+        }
+    
         /// Gets all active tests
         public List<Test> GetAll()
         {

@@ -107,6 +107,7 @@
     <Compile Include="BusinessLogic\Managers\UserManager.cs" />
     <Compile Include="DataAccess\DatabaseConnection.cs" />
     <Compile Include="DataAccess\Repositories\IRepository.cs" />
+    <Compile Include="DataAccess\Repositories\StudentAnswerRepository.cs" />
     <Compile Include="DataAccess\Repositories\TestRepository.cs" />
     <Compile Include="DataAccess\Repositories\UserRepositories.cs" />
     <Compile Include="Form1.cs">

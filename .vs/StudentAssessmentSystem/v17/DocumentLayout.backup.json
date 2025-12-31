@@ -7,10 +7,6 @@
       "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:businesslogic\\managers\\usermanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\dataaccess\\repositories\\userrepositories.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:dataaccess\\repositories\\userrepositories.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\businesslogic\\managers\\testmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:businesslogic\\managers\\testmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -23,12 +19,16 @@
       "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:businesslogic\\managers\\questionbankmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\dataaccess\\databaseconnection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:dataaccess\\databaseconnection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\dataaccess\\repositories\\irepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:dataaccess\\repositories\\irepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\dataaccess\\repositories\\userrepositories.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:dataaccess\\repositories\\userrepositories.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\dataaccess\\databaseconnection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:dataaccess\\databaseconnection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\models\\assessment\\multiplechoicequestion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -118,20 +118,8 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "TestManager.cs",
-              "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\BusinessLogic\\Managers\\TestManager.cs",
-              "RelativeDocumentMoniker": "BusinessLogic\\Managers\\TestManager.cs",
-              "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\BusinessLogic\\Managers\\TestManager.cs",
-              "RelativeToolTip": "BusinessLogic\\Managers\\TestManager.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-22T22:49:45.292Z"
-            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
@@ -140,14 +128,14 @@
               "RelativeDocumentMoniker": "BusinessLogic\\Managers\\UserManager.cs",
               "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\BusinessLogic\\Managers\\UserManager.cs",
               "RelativeToolTip": "BusinessLogic\\Managers\\UserManager.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAAABcAAAAxAAAAAAAAAA==",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-12-22T22:46:31.707Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 2,
               "Title": "ScoringManager.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\BusinessLogic\\Managers\\ScoringManager.cs",
               "RelativeDocumentMoniker": "BusinessLogic\\Managers\\ScoringManager.cs",
@@ -155,11 +143,12 @@
               "RelativeToolTip": "BusinessLogic\\Managers\\ScoringManager.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-22T22:50:29.724Z"
+              "WhenOpened": "2025-12-22T22:50:29.724Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 3,
               "Title": "QuestionBankManager.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\BusinessLogic\\Managers\\QuestionBankManager.cs",
               "RelativeDocumentMoniker": "BusinessLogic\\Managers\\QuestionBankManager.cs",
@@ -167,19 +156,7 @@
               "RelativeToolTip": "BusinessLogic\\Managers\\QuestionBankManager.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-22T22:50:03.585Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "UserRepositories.cs",
-              "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\DataAccess\\Repositories\\UserRepositories.cs",
-              "RelativeDocumentMoniker": "DataAccess\\Repositories\\UserRepositories.cs",
-              "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\DataAccess\\Repositories\\UserRepositories.cs",
-              "RelativeToolTip": "DataAccess\\Repositories\\UserRepositories.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACgBAAAnAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-11T23:26:53.287Z",
+              "WhenOpened": "2025-12-22T22:50:03.585Z",
               "EditorCaption": ""
             },
             {
@@ -196,6 +173,44 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "IRepository.cs",
+              "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\DataAccess\\Repositories\\IRepository.cs",
+              "RelativeDocumentMoniker": "DataAccess\\Repositories\\IRepository.cs",
+              "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\DataAccess\\Repositories\\IRepository.cs",
+              "RelativeToolTip": "DataAccess\\Repositories\\IRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-11T23:25:07.723Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "TestManager.cs",
+              "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\BusinessLogic\\Managers\\TestManager.cs",
+              "RelativeDocumentMoniker": "BusinessLogic\\Managers\\TestManager.cs",
+              "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\BusinessLogic\\Managers\\TestManager.cs",
+              "RelativeToolTip": "BusinessLogic\\Managers\\TestManager.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-22T22:49:45.292Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "UserRepositories.cs",
+              "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\DataAccess\\Repositories\\UserRepositories.cs",
+              "RelativeDocumentMoniker": "DataAccess\\Repositories\\UserRepositories.cs",
+              "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\DataAccess\\Repositories\\UserRepositories.cs",
+              "RelativeToolTip": "DataAccess\\Repositories\\UserRepositories.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACgBAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-11T23:26:53.287Z"
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 7,
               "Title": "MultipleChoiceQuestion.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Models\\Assessment\\MultipleChoiceQuestion.cs",
@@ -209,18 +224,6 @@
             {
               "$type": "Document",
               "DocumentIndex": 6,
-              "Title": "IRepository.cs",
-              "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\DataAccess\\Repositories\\IRepository.cs",
-              "RelativeDocumentMoniker": "DataAccess\\Repositories\\IRepository.cs",
-              "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\DataAccess\\Repositories\\IRepository.cs",
-              "RelativeToolTip": "DataAccess\\Repositories\\IRepository.cs",
-              "ViewState": "AgIAAAkAAAAAAAAAAAAAAB0AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-11T23:25:07.723Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
               "Title": "DatabaseConnection.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\DataAccess\\DatabaseConnection.cs",
               "RelativeDocumentMoniker": "DataAccess\\DatabaseConnection.cs",

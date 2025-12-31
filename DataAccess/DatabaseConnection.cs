@@ -17,10 +17,10 @@ namespace StudentAssessmentSystem.DataAccess
         // ENCAPSULATION: Private connection string
         private static string _connectionString;
 
-        /// <summary>
+     
         /// Initializes the MySQL database connection string
         /// Call this once at application startup in Program.cs
-        /// </summary>
+      
         /// <param name="server">MySQL server address (usually "localhost" or "127.0.0.1")</param>
         /// <param name="database">Database name (StudentAssessmentDB)</param>
         /// <param name="username">MySQL username (default: root)</param>
