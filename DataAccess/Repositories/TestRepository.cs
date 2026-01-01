@@ -126,7 +126,7 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
 
                                 // Load questions for this test
                                 var questionRepo = new QuestionRepository();
-                                test.Questions = questionRepo.GetQuestionsByTest(test.TestId);
+                                test.Questions = questionRepo.GetQuestionsByTest(test.TestId).Cast<Question>().ToList();
 
                                 return test;
                             }
