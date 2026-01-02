@@ -8,8 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace StudentAssessmentSystem.UI.Admin
+namespace StudentAssessmentSystem.UI.Forms.Admin
 {
+    using StudentAssessmentSystem.Models.Users;
     public partial class AdminDashboardForm : Form
     {
         private Admin _currentAdmin;

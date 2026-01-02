@@ -9,6 +9,7 @@ using System.Windows.Forms;
 
 namespace StudentAssessmentSystem.UI.Forms.Student
 {
+    using StudentAssessmentSystem.Models.Users;
     public partial class StudentDashboardForm : Form
     {
         private Student _currentStudent;

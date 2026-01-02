@@ -149,7 +149,16 @@
     <Compile Include="UI\Forms\Student\StudentDashboardForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="UI\Forms\Teacher\AvailableTestsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\Forms\Teacher\MyTestsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="UI\Forms\Teacher\TeacherDashboardForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\Forms\Teacher\TestCreationForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Utilities\SessionManager.cs" />

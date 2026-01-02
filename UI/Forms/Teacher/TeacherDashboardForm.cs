@@ -8,10 +8,12 @@ using StudentAssessmentSystem.Utilities;
 using StudentAssessmentSystem.Models.Users;
 using System.Drawing;
 
+
 // Purpose: Main dashboard for teachers
 // Connected to: TestManager, QuestionBankManager
 namespace StudentAssessmentSystem.UI.Forms.Teacher
 {
+    using StudentAssessmentSystem.Models.Users;
     public partial class TeacherDashboardForm : Form
     {
         private Teacher _currentTeacher;
