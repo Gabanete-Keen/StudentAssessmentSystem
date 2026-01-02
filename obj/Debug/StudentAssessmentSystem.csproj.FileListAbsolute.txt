@@ -1,8 +1,3 @@
-D:\Outputs\StudentAssessmentSystem\obj\Debug\StudentAssessmentSystem.csproj.AssemblyReference.cache
-D:\Outputs\StudentAssessmentSystem\obj\Debug\StudentAssessmentSystem.Form1.resources
-D:\Outputs\StudentAssessmentSystem\obj\Debug\StudentAssessmentSystem.Properties.Resources.resources
-D:\Outputs\StudentAssessmentSystem\obj\Debug\StudentAssessmentSystem.csproj.GenerateResource.cache
-D:\Outputs\StudentAssessmentSystem\obj\Debug\StudentAssessmentSystem.csproj.CoreCompileInputs.cache
 D:\Outputs\StudentAssessmentSystem\bin\Debug\StudentAssessmentSystem.exe.config
 D:\Outputs\StudentAssessmentSystem\bin\Debug\StudentAssessmentSystem.exe
 D:\Outputs\StudentAssessmentSystem\bin\Debug\StudentAssessmentSystem.pdb
@@ -38,7 +33,10 @@ D:\Outputs\StudentAssessmentSystem\bin\Debug\System.Memory.xml
 D:\Outputs\StudentAssessmentSystem\bin\Debug\System.Numerics.Vectors.xml
 D:\Outputs\StudentAssessmentSystem\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
 D:\Outputs\StudentAssessmentSystem\bin\Debug\System.Threading.Tasks.Extensions.xml
+D:\Outputs\StudentAssessmentSystem\obj\Debug\StudentAssessmentSystem.csproj.AssemblyReference.cache
+D:\Outputs\StudentAssessmentSystem\obj\Debug\StudentAssessmentSystem.Properties.Resources.resources
+D:\Outputs\StudentAssessmentSystem\obj\Debug\StudentAssessmentSystem.csproj.GenerateResource.cache
+D:\Outputs\StudentAssessmentSystem\obj\Debug\StudentAssessmentSystem.csproj.CoreCompileInputs.cache
 D:\Outputs\StudentAssessmentSystem\obj\Debug\StudentA.9C24A695.Up2Date
 D:\Outputs\StudentAssessmentSystem\obj\Debug\StudentAssessmentSystem.exe
 D:\Outputs\StudentAssessmentSystem\obj\Debug\StudentAssessmentSystem.pdb
-D:\Outputs\StudentAssessmentSystem\obj\Debug\StudentAssessmentSystem.exe.config

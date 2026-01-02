@@ -1,24 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MySql.Data.MySqlClient;  
+using MySql.Data.MySqlClient;
 using StudentAssessmentSystem.Models.Users;
 using StudentAssessmentSystem.Models.Enums;
-// Purpose: Handles all MySQL database operations for Users
-// Connected to: User, Admin, Teacher, Student models, UserManager
-// SOLID: Single Responsibility - Only database operations for users
+
 namespace StudentAssessmentSystem.DataAccess.Repositories
 {
-    /// Repository for User database operations - MySQL version
+    /// Repository for User database operations 
     /// Implements CRUD operations for users
     public class UserRepositories : IRepository<User>
     {
-       
         /// Adds a new user to the MySQL database
         /// POLYMORPHISM: Works with Admin, Teacher, or Student
-       
         public int Add(User entity)
         {
             try
@@ -27,7 +20,6 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                 {
                     conn.Open();
 
-                    
                     string query = @"INSERT INTO Users (Username, PasswordHash, FirstName, LastName, Email, UserRole, IsActive, CreatedDate)
                                    VALUES (@Username, @PasswordHash, @FirstName, @LastName, @Email, @UserRole, @IsActive, @CreatedDate);
                                    SELECT LAST_INSERT_ID();";
@@ -58,7 +50,6 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
             }
         }
 
-      
         /// Inserts data into Admin/Teacher/Student tables
         /// POLYMORPHISM: Handles different user types    
         private void InsertRoleSpecificData(MySqlConnection conn, User entity, int userId)
@@ -97,7 +88,8 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
             }
         }
 
-        /// Gets user by ID
+     
+        /// Gets user by ID  
         public User GetById(int id)
         {
             try
@@ -115,7 +107,13 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                         {
                             if (reader.Read())
                             {
-                                return MapReaderToUser(reader);
+                                User user = MapReaderToUser(reader);
+                                reader.Close();
+
+                                //  Load role-specific data
+                                LoadRoleSpecificData(conn, user);
+
+                                return user;
                             }
                         }
                     }
@@ -128,6 +126,7 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
             }
         }
 
+
         /// Gets all users
         public List<User> GetAll()
         {
@@ -139,7 +138,6 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                 {
                     conn.Open();
 
-                    // MySQL uses TRUE/FALSE instead of 1/0 for boolean
                     string query = "SELECT * FROM Users WHERE IsActive = TRUE";
                     using (var cmd = new MySqlCommand(query, conn))
                     using (var reader = cmd.ExecuteReader())
@@ -148,6 +146,12 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                         {
                             users.Add(MapReaderToUser(reader));
                         }
+                    }
+
+                    //  Load role-specific data for all users
+                    foreach (var user in users)
+                    {
+                        LoadRoleSpecificData(conn, user);
                     }
                 }
             }
@@ -159,8 +163,7 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
             return users;
         }
 
-    
-        /// Updates user information  
+        /// Updates user information
         public bool Update(User entity)
         {
             try
@@ -206,7 +209,6 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                 {
                     conn.Open();
 
-                    // MySQL uses FALSE instead of 0
                     string query = "UPDATE Users SET IsActive = FALSE WHERE UserId = @UserId";
                     using (var cmd = new MySqlCommand(query, conn))
                     {
@@ -241,7 +243,14 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                         {
                             if (reader.Read())
                             {
-                                return MapReaderToUser(reader);
+                                //  Create user object from database
+                                User user = MapReaderToUser(reader);
+                                reader.Close();
+
+                                //  CRITICAL: Load role-specific data
+                                LoadRoleSpecificData(conn, user);
+
+                                return user;
                             }
                         }
                     }
@@ -254,8 +263,85 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
             }
         }
 
-      
-        /// Updates last login date   
+        private void LoadRoleSpecificData(MySqlConnection conn, User user)
+        {
+            try
+            {
+                if (user is Admin admin)
+                {
+                    string query = "SELECT AccessLevel FROM Admins WHERE AdminId = @UserId";
+                    using (var cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@UserId", user.UserId);
+                        var result = cmd.ExecuteScalar();
+                        if (result != null && result != DBNull.Value)
+                        {
+                            admin.AccessLevel = Convert.ToInt32(result);
+                        }
+                        else
+                        {
+                            admin.AccessLevel = 1; // Default access level
+                        }
+                    }
+                }
+                else if (user is Teacher teacher)
+                {
+                    string query = "SELECT EmployeeNumber, Department FROM Teachers WHERE TeacherId = @UserId";
+                    using (var cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@UserId", user.UserId);
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                teacher.EmployeeNumber = reader.IsDBNull(reader.GetOrdinal("EmployeeNumber"))
+                                    ? "" : reader.GetString("EmployeeNumber");
+                                teacher.Department = reader.IsDBNull(reader.GetOrdinal("Department"))
+                                    ? "Not Assigned" : reader.GetString("Department");
+                            }
+                            else
+                            {
+                                // No record in Teachers table - set defaults
+                                teacher.EmployeeNumber = "";
+                                teacher.Department = "Not Assigned";
+                            }
+                        }
+                    }
+                }
+                else if (user is Student student)
+                {
+                    string query = "SELECT StudentNumber, YearLevel FROM Students WHERE StudentId = @UserId";
+                    using (var cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@UserId", user.UserId);
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                student.StudentNumber = reader.IsDBNull(reader.GetOrdinal("StudentNumber"))
+                                    ? "" : reader.GetString("StudentNumber");
+                                student.YearLevel = reader.GetInt32("YearLevel");
+                            }
+                            else
+                            {
+                                // No record in Students table - set defaults
+                                student.StudentNumber = "";
+                                student.YearLevel = 1;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log error but don't crash - user can still login with basic info
+                System.Diagnostics.Debug.WriteLine($"Warning: Could not load role-specific data: {ex.Message}");
+            }
+        }
+
+       
+        /// Updates last login date
+       
         public bool UpdateLastLogin(int userId)
         {
             try
@@ -264,7 +350,6 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                 {
                     conn.Open();
 
-                   
                     string query = "UPDATE Users SET LastLoginDate = NOW() WHERE UserId = @UserId";
                     using (var cmd = new MySqlCommand(query, conn))
                     {
@@ -280,8 +365,10 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
             }
         }
 
+       
         /// Maps MySQL database row to User object
         /// POLYMORPHISM: Creates correct user type (Admin/Teacher/Student)
+        
         private User MapReaderToUser(MySqlDataReader reader)
         {
             // Read role to determine which type to create
@@ -304,7 +391,7 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                     break;
             }
 
-            // Fill common properties using MySQL-specific methods
+            // Fill common properties
             user.UserId = reader.GetInt32("UserId");
             user.Username = reader.GetString("Username");
             user.PasswordHash = reader.GetString("PasswordHash");
@@ -315,7 +402,7 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
             user.IsActive = reader.GetBoolean("IsActive");
             user.CreatedDate = reader.GetDateTime("CreatedDate");
 
-            // Check for NULL using GetOrdinal
+            // Check for NULL LastLoginDate
             int lastLoginOrdinal = reader.GetOrdinal("LastLoginDate");
             if (!reader.IsDBNull(lastLoginOrdinal))
                 user.LastLoginDate = reader.GetDateTime(lastLoginOrdinal);
@@ -324,4 +411,3 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
         }
     }
 }
-

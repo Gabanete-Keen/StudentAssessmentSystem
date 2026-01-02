@@ -3,23 +3,39 @@
   "WorkspaceRootPath": "D:\\Outputs\\StudentAssessmentSystem\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\ui\\forms\\loginform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:ui\\forms\\loginform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\dataaccess\\repositories\\userrepositories.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:dataaccess\\repositories\\userrepositories.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\ui\\forms\\student\\studentdashboardform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:ui\\forms\\student\\studentdashboardform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\ui\\admin\\admindashboardform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:ui\\admin\\admindashboardform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\ui\\forms\\teacher\\teacherdashboardform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:ui\\forms\\teacher\\teacherdashboardform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\ui\\forms\\teacher\\mytestsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:ui\\forms\\teacher\\mytestsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\utilities\\sessionmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:utilities\\sessionmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\ui\\forms\\loginform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:ui\\forms\\loginform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|d:\\outputs\\studentassessmentsystem\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|d:\\outputs\\studentassessmentsystem\\ui\\forms\\teacher\\testcreationform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\ui\\forms\\teacher\\testcreationform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:ui\\forms\\teacher\\testcreationform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
@@ -27,32 +43,12 @@
       "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:businesslogic\\managers\\testmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|d:\\outputs\\studentassessmentsystem\\ui\\forms\\teacher\\mytestsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:ui\\forms\\teacher\\mytestsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|d:\\outputs\\studentassessmentsystem\\ui\\forms\\teacher\\availabletestsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\ui\\forms\\teacher\\availabletestsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:ui\\forms\\teacher\\availabletestsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|d:\\outputs\\studentassessmentsystem\\ui\\forms\\teacher\\teacherdashboardform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:ui\\forms\\teacher\\teacherdashboardform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\ui\\admin\\admindashboardform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:ui\\admin\\admindashboardform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\ui\\forms\\student\\studentdashboardform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:ui\\forms\\student\\studentdashboardform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\ui\\forms\\teacher\\teacherdashboardform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:ui\\forms\\teacher\\teacherdashboardform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\dataaccess\\repositories\\userrepositories.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:dataaccess\\repositories\\userrepositories.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\businesslogic\\services\\authenticationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -181,10 +177,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\models\\enums\\difficultylevel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:models\\enums\\difficultylevel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|D:\\Outputs\\StudentAssessmentSystem\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{29937C38-1F36-45B4-B3A3-F3A7EE829750}|StudentAssessmentSystem.csproj|solutionrelative:form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     }
   ],
   "DocumentGroupContainers": [
@@ -194,11 +186,76 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 4,
+              "Title": "TeacherDashboardForm.cs",
+              "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\UI\\Forms\\Teacher\\TeacherDashboardForm.cs",
+              "RelativeDocumentMoniker": "UI\\Forms\\Teacher\\TeacherDashboardForm.cs",
+              "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\UI\\Forms\\Teacher\\TeacherDashboardForm.cs",
+              "RelativeToolTip": "UI\\Forms\\Teacher\\TeacherDashboardForm.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAA1AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-02T03:45:44.159Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "AdminDashboardForm.cs",
+              "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\UI\\Admin\\AdminDashboardForm.cs",
+              "RelativeDocumentMoniker": "UI\\Admin\\AdminDashboardForm.cs",
+              "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\UI\\Admin\\AdminDashboardForm.cs",
+              "RelativeToolTip": "UI\\Admin\\AdminDashboardForm.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-02T03:52:59.887Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "UserRepositories.cs",
+              "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\DataAccess\\Repositories\\UserRepositories.cs",
+              "RelativeDocumentMoniker": "DataAccess\\Repositories\\UserRepositories.cs",
+              "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\DataAccess\\Repositories\\UserRepositories.cs",
+              "RelativeToolTip": "DataAccess\\Repositories\\UserRepositories.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-11T23:26:53.287Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "StudentDashboardForm.cs",
+              "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\UI\\Forms\\Student\\StudentDashboardForm.cs",
+              "RelativeDocumentMoniker": "UI\\Forms\\Student\\StudentDashboardForm.cs",
+              "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\UI\\Forms\\Student\\StudentDashboardForm.cs",
+              "RelativeToolTip": "UI\\Forms\\Student\\StudentDashboardForm.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-02T03:52:10.171Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "LoginForm.cs",
+              "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\UI\\Forms\\LoginForm.cs",
+              "RelativeDocumentMoniker": "UI\\Forms\\LoginForm.cs",
+              "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\UI\\Forms\\LoginForm.cs",
+              "RelativeToolTip": "UI\\Forms\\LoginForm.cs",
+              "ViewState": "AgIAAKoAAAAAAAAAAAAwwAoAAAArAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-02T03:28:34.898Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
               "Title": "MyTestsForm.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\UI\\Forms\\Teacher\\MyTestsForm.cs",
               "RelativeDocumentMoniker": "UI\\Forms\\Teacher\\MyTestsForm.cs",
@@ -211,7 +268,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 8,
               "Title": "TestCreationForm.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\UI\\Forms\\Teacher\\TestCreationForm.cs",
               "RelativeDocumentMoniker": "UI\\Forms\\Teacher\\TestCreationForm.cs",
@@ -219,38 +276,24 @@
               "RelativeToolTip": "UI\\Forms\\Teacher\\TestCreationForm.cs",
               "ViewState": "AgIAAKcAAAAAAAAAAAAowNcAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-02T07:37:38.414Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-02T07:37:38.414Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "TeacherDashboardForm.cs",
-              "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\UI\\Forms\\Teacher\\TeacherDashboardForm.cs",
-              "RelativeDocumentMoniker": "UI\\Forms\\Teacher\\TeacherDashboardForm.cs",
-              "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\UI\\Forms\\Teacher\\TeacherDashboardForm.cs",
-              "RelativeToolTip": "UI\\Forms\\Teacher\\TeacherDashboardForm.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 6,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-02T03:45:44.159Z",
+              "WhenOpened": "2026-01-02T07:56:55.626Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "LoginForm.cs",
-              "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\UI\\Forms\\LoginForm.cs",
-              "RelativeDocumentMoniker": "UI\\Forms\\LoginForm.cs",
-              "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\UI\\Forms\\LoginForm.cs",
-              "RelativeToolTip": "UI\\Forms\\LoginForm.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAoAAAArAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-02T03:28:34.898Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 7,
               "Title": "SessionManager.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Utilities\\SessionManager.cs",
               "RelativeDocumentMoniker": "Utilities\\SessionManager.cs",
@@ -258,25 +301,11 @@
               "RelativeToolTip": "Utilities\\SessionManager.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAoAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-02T03:33:39.682Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-02T03:33:39.682Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Form1.cs",
-              "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Form1.cs",
-              "RelativeDocumentMoniker": "Form1.cs",
-              "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\Form1.cs*",
-              "RelativeToolTip": "Form1.cs*",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAAA8AAAAKAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-02T03:38:49.267Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 10,
               "Title": "AvailableTestsForm.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\UI\\Forms\\Teacher\\AvailableTestsForm.cs",
               "RelativeDocumentMoniker": "UI\\Forms\\Teacher\\AvailableTestsForm.cs",
@@ -284,25 +313,11 @@
               "RelativeToolTip": "UI\\Forms\\Teacher\\AvailableTestsForm.cs",
               "ViewState": "AgIAAE0AAAAAAAAAAAAIwAcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-02T07:39:25.232Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-02T07:39:25.232Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Program.cs",
-              "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Program.cs",
-              "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAABsAAAAAAAAAAAAowCIAAABLAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-02T07:56:55.626Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 9,
               "Title": "TestManager.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\BusinessLogic\\Managers\\TestManager.cs",
               "RelativeDocumentMoniker": "BusinessLogic\\Managers\\TestManager.cs",
@@ -310,34 +325,7 @@
               "RelativeToolTip": "BusinessLogic\\Managers\\TestManager.cs",
               "ViewState": "AgIAAAMAAAAAAAAAAAAAAAwAAAADAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-22T22:49:45.292Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "AdminDashboardForm.cs",
-              "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\UI\\Admin\\AdminDashboardForm.cs",
-              "RelativeDocumentMoniker": "UI\\Admin\\AdminDashboardForm.cs",
-              "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\UI\\Admin\\AdminDashboardForm.cs",
-              "RelativeToolTip": "UI\\Admin\\AdminDashboardForm.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAvAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-02T03:52:59.887Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "StudentDashboardForm.cs",
-              "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\UI\\Forms\\Student\\StudentDashboardForm.cs",
-              "RelativeDocumentMoniker": "UI\\Forms\\Student\\StudentDashboardForm.cs",
-              "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\UI\\Forms\\Student\\StudentDashboardForm.cs",
-              "RelativeToolTip": "UI\\Forms\\Student\\StudentDashboardForm.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAvAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-02T03:52:10.171Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-22T22:49:45.292Z"
             },
             {
               "$type": "Document",
@@ -353,7 +341,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 14,
               "Title": "ReportService.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\BusinessLogic\\Services\\ReportService.cs",
               "RelativeDocumentMoniker": "BusinessLogic\\Services\\ReportService.cs",
@@ -365,7 +353,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 12,
               "Title": "AuthenticationService.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\BusinessLogic\\Services\\AuthenticationService.cs",
               "RelativeDocumentMoniker": "BusinessLogic\\Services\\AuthenticationService.cs",
@@ -377,19 +365,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
-              "Title": "UserRepositories.cs",
-              "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\DataAccess\\Repositories\\UserRepositories.cs",
-              "RelativeDocumentMoniker": "DataAccess\\Repositories\\UserRepositories.cs",
-              "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\DataAccess\\Repositories\\UserRepositories.cs",
-              "RelativeToolTip": "DataAccess\\Repositories\\UserRepositories.cs",
-              "ViewState": "AgIAABABAAAAAAAAAAAYwBkBAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-11T23:26:53.287Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 16,
               "Title": "ValidationService.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\BusinessLogic\\Services\\ValidationService.cs",
               "RelativeDocumentMoniker": "BusinessLogic\\Services\\ValidationService.cs",
@@ -401,7 +377,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 13,
               "Title": "UserManager.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\BusinessLogic\\Managers\\UserManager.cs",
               "RelativeDocumentMoniker": "BusinessLogic\\Managers\\UserManager.cs",
@@ -413,7 +389,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 15,
               "Title": "ScoringService.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\BusinessLogic\\Services\\ScoringService.cs",
               "RelativeDocumentMoniker": "BusinessLogic\\Services\\ScoringService.cs",
@@ -425,7 +401,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 19,
               "Title": "StudentAnswerRepository.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\DataAccess\\Repositories\\StudentAnswerRepository.cs",
               "RelativeDocumentMoniker": "DataAccess\\Repositories\\StudentAnswerRepository.cs",
@@ -437,7 +413,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 21,
               "Title": "DifficultyCalculator.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\BusinessLogic\\Analysis\\DifficultyCalculator.cs",
               "RelativeDocumentMoniker": "BusinessLogic\\Analysis\\DifficultyCalculator.cs",
@@ -449,7 +425,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 20,
               "Title": "StatisticsCalculator.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\BusinessLogic\\Analysis\\StatisticsCalculator.cs",
               "RelativeDocumentMoniker": "BusinessLogic\\Analysis\\StatisticsCalculator.cs",
@@ -461,7 +437,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 18,
               "Title": "ItemAnalyzer.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\BusinessLogic\\Analysis\\ItemAnalyzer.cs",
               "RelativeDocumentMoniker": "BusinessLogic\\Analysis\\ItemAnalyzer.cs",
@@ -473,7 +449,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 17,
               "Title": "TestRepository.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\DataAccess\\Repositories\\TestRepository.cs",
               "RelativeDocumentMoniker": "DataAccess\\Repositories\\TestRepository.cs",
@@ -485,7 +461,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 24,
+              "DocumentIndex": 23,
               "Title": "IRepository.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\DataAccess\\Repositories\\IRepository.cs",
               "RelativeDocumentMoniker": "DataAccess\\Repositories\\IRepository.cs",
@@ -497,7 +473,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 23,
+              "DocumentIndex": 22,
               "Title": "QuestionBankManager.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\BusinessLogic\\Managers\\QuestionBankManager.cs",
               "RelativeDocumentMoniker": "BusinessLogic\\Managers\\QuestionBankManager.cs",
@@ -509,7 +485,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 25,
+              "DocumentIndex": 24,
               "Title": "DatabaseConnection.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\DataAccess\\DatabaseConnection.cs",
               "RelativeDocumentMoniker": "DataAccess\\DatabaseConnection.cs",
@@ -521,7 +497,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 28,
+              "DocumentIndex": 27,
               "Title": "Question.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Models\\Assessment\\Question.cs",
               "RelativeDocumentMoniker": "Models\\Assessment\\Question.cs",
@@ -533,7 +509,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 26,
+              "DocumentIndex": 25,
               "Title": "ScoringManager.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\BusinessLogic\\Managers\\ScoringManager.cs",
               "RelativeDocumentMoniker": "BusinessLogic\\Managers\\ScoringManager.cs",
@@ -545,7 +521,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 27,
+              "DocumentIndex": 26,
               "Title": "MultipleChoiceQuestion.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Models\\Assessment\\MultipleChoiceQuestion.cs",
               "RelativeDocumentMoniker": "Models\\Assessment\\MultipleChoiceQuestion.cs",
@@ -557,7 +533,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 31,
+              "DocumentIndex": 30,
               "Title": "TestResult.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Models\\Results\\TestResult.cs",
               "RelativeDocumentMoniker": "Models\\Results\\TestResult.cs",
@@ -569,7 +545,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 29,
+              "DocumentIndex": 28,
               "Title": "QuestionStatistics.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Models\\Results\\QuestionStatistics.cs",
               "RelativeDocumentMoniker": "Models\\Results\\QuestionStatistics.cs",
@@ -581,7 +557,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 30,
+              "DocumentIndex": 29,
               "Title": "StudentAnswer.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Models\\Results\\StudentAnswer.cs",
               "RelativeDocumentMoniker": "Models\\Results\\StudentAnswer.cs",
@@ -593,7 +569,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 32,
+              "DocumentIndex": 31,
               "Title": "TestInstance.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Models\\Assessment\\TestInstance.cs",
               "RelativeDocumentMoniker": "Models\\Assessment\\TestInstance.cs",
@@ -605,7 +581,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 33,
+              "DocumentIndex": 32,
               "Title": "QuestionChoice.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Models\\Assessment\\QuestionChoice.cs",
               "RelativeDocumentMoniker": "Models\\Assessment\\QuestionChoice.cs",
@@ -617,7 +593,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 34,
+              "DocumentIndex": 33,
               "Title": "Test.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Models\\Assessment\\Test.cs",
               "RelativeDocumentMoniker": "Models\\Assessment\\Test.cs",
@@ -629,7 +605,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 35,
+              "DocumentIndex": 34,
               "Title": "Section.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Models\\Academic\\Section.cs",
               "RelativeDocumentMoniker": "Models\\Academic\\Section.cs",
@@ -641,7 +617,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 36,
+              "DocumentIndex": 35,
               "Title": "Subject.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Models\\Academic\\Subject.cs",
               "RelativeDocumentMoniker": "Models\\Academic\\Subject.cs",
@@ -653,7 +629,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 38,
+              "DocumentIndex": 37,
               "Title": "Student.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Models\\Users\\Student.cs",
               "RelativeDocumentMoniker": "Models\\Users\\Student.cs",
@@ -665,7 +641,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 37,
+              "DocumentIndex": 36,
               "Title": "Teacher.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Models\\Users\\Teacher.cs",
               "RelativeDocumentMoniker": "Models\\Users\\Teacher.cs",
@@ -677,7 +653,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 40,
+              "DocumentIndex": 39,
               "Title": "UserRole.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Models\\Enums\\UserRole.cs",
               "RelativeDocumentMoniker": "Models\\Enums\\UserRole.cs",
@@ -689,7 +665,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 39,
+              "DocumentIndex": 38,
               "Title": "TestType.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Models\\Enums\\TestType.cs",
               "RelativeDocumentMoniker": "Models\\Enums\\TestType.cs",
@@ -701,7 +677,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 41,
+              "DocumentIndex": 40,
               "Title": "CognitiveLevel.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Models\\Enums\\CognitiveLevel.cs",
               "RelativeDocumentMoniker": "Models\\Enums\\CognitiveLevel.cs",
@@ -713,7 +689,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 44,
+              "DocumentIndex": 43,
               "Title": "DifficultyLevel.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Models\\Enums\\DifficultyLevel.cs",
               "RelativeDocumentMoniker": "Models\\Enums\\DifficultyLevel.cs",
@@ -725,7 +701,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 43,
+              "DocumentIndex": 42,
               "Title": "Admin.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Models\\Users\\Admin.cs",
               "RelativeDocumentMoniker": "Models\\Users\\Admin.cs",
@@ -737,7 +713,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 42,
+              "DocumentIndex": 41,
               "Title": "User.cs",
               "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Models\\Users\\User.cs",
               "RelativeDocumentMoniker": "Models\\Users\\User.cs",
@@ -746,18 +722,6 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-30T10:17:08.647Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 45,
-              "Title": "Form1.cs [Design]",
-              "DocumentMoniker": "D:\\Outputs\\StudentAssessmentSystem\\Form1.cs",
-              "RelativeDocumentMoniker": "Form1.cs",
-              "ToolTip": "D:\\Outputs\\StudentAssessmentSystem\\Form1.cs [Design]*",
-              "RelativeToolTip": "Form1.cs [Design]*",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-30T09:52:41.263Z",
-              "EditorCaption": " [Design]"
             }
           ]
         }

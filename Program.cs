@@ -1,18 +1,15 @@
 ﻿using StudentAssessmentSystem.DataAccess;
 using StudentAssessmentSystem.UI.Forms;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace StudentAssessmentSystem
 {
     internal static class Program
     {
-        /// <summary>
+
         /// The main entry point for the application.
-        /// </summary>
+     
         [STAThread]
         static void Main()
         {
@@ -31,7 +28,7 @@ namespace StudentAssessmentSystem
                     server: "localhost",              // MySQL server address
                     database: "StudentAssessmentDB",  // Your database name
                     username: "root",                 // Your MySQL username
-                    password: "MySql_Admin#88",         // YOUR MYSQL PASSWORD HERE!
+                    password: "MySql_Admin#88",       // YOUR MYSQL PASSWORD HERE!
                     port: 3306                        // Default MySQL port
                 );
 
@@ -96,5 +93,3 @@ namespace StudentAssessmentSystem
         }
     }
 }
-    
-

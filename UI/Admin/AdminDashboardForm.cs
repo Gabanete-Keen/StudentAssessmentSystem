@@ -1,21 +1,17 @@
-﻿using StudentAssessmentSystem.UI.Forms;
-using StudentAssessmentSystem.Utilities;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using StudentAssessmentSystem.Utilities;
+using StudentAssessmentSystem.Models.Users;
 
 namespace StudentAssessmentSystem.UI.Forms.Admin
 {
-    using StudentAssessmentSystem.Models.Users;
     public partial class AdminDashboardForm : Form
     {
-        private Admin _currentAdmin;
+        private Models.Users.Admin _currentAdmin;
 
         private Label lblWelcome;
+        private Label lblInfo;
         private GroupBox grpActions;
         private Button btnManageUsers;
         private Button btnManageSubjects;
@@ -24,8 +20,34 @@ namespace StudentAssessmentSystem.UI.Forms.Admin
 
         public AdminDashboardForm()
         {
-            _currentAdmin = SessionManager.CurrentUser as Admin;
-            InitializeComponent();
+            try
+            {
+                InitializeComponent();
+                LoadAdminData();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error initializing admin dashboard:\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
+                    "Initialization Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void LoadAdminData()
+        {
+            try
+            {
+                _currentAdmin = SessionManager.CurrentUser as Models.Users.Admin;
+
+                if (_currentAdmin != null)
+                {
+                    lblWelcome.Text = $"Welcome, {_currentAdmin.FullName}!";
+                    lblInfo.Text = $"Access Level: {_currentAdmin.AccessLevel}";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading admin data:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void InitializeComponent()
@@ -34,18 +56,20 @@ namespace StudentAssessmentSystem.UI.Forms.Admin
             this.Size = new Size(500, 400);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.WhiteSmoke;
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
 
             // Welcome Label
             lblWelcome = new Label();
-            lblWelcome.Text = $"Welcome, Administrator!";
+            lblWelcome.Text = "Welcome, Administrator!";
             lblWelcome.Font = new Font("Arial", 16, FontStyle.Bold);
             lblWelcome.Location = new Point(20, 20);
             lblWelcome.Size = new Size(450, 30);
             this.Controls.Add(lblWelcome);
 
             // Info
-            Label lblInfo = new Label();
-            lblInfo.Text = $"Access Level: {_currentAdmin.AccessLevel}";
+            lblInfo = new Label();
+            lblInfo.Text = "System Administration Panel";
             lblInfo.Location = new Point(20, 55);
             lblInfo.Size = new Size(450, 20);
             lblInfo.Font = new Font("Arial", 10);
@@ -67,7 +91,7 @@ namespace StudentAssessmentSystem.UI.Forms.Admin
             btnManageUsers.Font = new Font("Arial", 10, FontStyle.Bold);
             btnManageUsers.BackColor = Color.LightBlue;
             btnManageUsers.Cursor = Cursors.Hand;
-            btnManageUsers.Click += (s, e) => MessageBox.Show("Manage Users coming soon!");
+            btnManageUsers.Click += (s, e) => MessageBox.Show("Manage Users coming soon!", "Info");
             grpActions.Controls.Add(btnManageUsers);
 
             // Manage Subjects Button
@@ -78,7 +102,7 @@ namespace StudentAssessmentSystem.UI.Forms.Admin
             btnManageSubjects.Font = new Font("Arial", 10, FontStyle.Bold);
             btnManageSubjects.BackColor = Color.LightGreen;
             btnManageSubjects.Cursor = Cursors.Hand;
-            btnManageSubjects.Click += (s, e) => MessageBox.Show("Manage Subjects coming soon!");
+            btnManageSubjects.Click += (s, e) => MessageBox.Show("Manage Subjects coming soon!", "Info");
             grpActions.Controls.Add(btnManageSubjects);
 
             // View Reports Button
@@ -89,7 +113,7 @@ namespace StudentAssessmentSystem.UI.Forms.Admin
             btnViewReports.Font = new Font("Arial", 10, FontStyle.Bold);
             btnViewReports.BackColor = Color.LightYellow;
             btnViewReports.Cursor = Cursors.Hand;
-            btnViewReports.Click += (s, e) => MessageBox.Show("View Reports coming soon!");
+            btnViewReports.Click += (s, e) => MessageBox.Show("View Reports coming soon!", "Info");
             grpActions.Controls.Add(btnViewReports);
 
             // Logout Button
@@ -105,21 +129,28 @@ namespace StudentAssessmentSystem.UI.Forms.Admin
 
         private void BtnLogout_Click(object sender, EventArgs e)
         {
-            DialogResult result = MessageBox.Show(
-                "Are you sure you want to logout?",
-                "Confirm Logout",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
-            );
-
-            if (result == DialogResult.Yes)
+            try
             {
-                SessionManager.Logout();
-                LoginForm loginForm = new LoginForm();
-                loginForm.Show();
-                this.Close();
+                DialogResult result = MessageBox.Show(
+                    "Are you sure you want to logout?",
+                    "Confirm Logout",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question
+                );
+
+                if (result == DialogResult.Yes)
+                {
+                    SessionManager.Logout();
+
+                    var loginForm = new StudentAssessmentSystem.UI.Forms.LoginForm();
+                    loginForm.Show();
+                    this.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error during logout:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
 }
-

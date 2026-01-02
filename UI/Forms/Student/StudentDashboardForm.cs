@@ -1,20 +1,16 @@
-﻿using StudentAssessmentSystem.Utilities;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using StudentAssessmentSystem.Utilities;
 
 namespace StudentAssessmentSystem.UI.Forms.Student
 {
-    using StudentAssessmentSystem.Models.Users;
     public partial class StudentDashboardForm : Form
     {
-        private Student _currentStudent;
+        private Models.Users.Student _currentStudent;
 
         private Label lblWelcome;
+        private Label lblInfo;
         private GroupBox grpActions;
         private Button btnTakeTest;
         private Button btnMyResults;
@@ -22,8 +18,34 @@ namespace StudentAssessmentSystem.UI.Forms.Student
 
         public StudentDashboardForm()
         {
-            _currentStudent = SessionManager.CurrentUser as Student;
-            InitializeComponent();
+            try
+            {
+                InitializeComponent();
+                LoadStudentData();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error initializing student dashboard:\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
+                    "Initialization Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void LoadStudentData()
+        {
+            try
+            {
+                _currentStudent = SessionManager.CurrentUser as Models.Users.Student;
+
+                if (_currentStudent != null)
+                {
+                    lblWelcome.Text = $"Welcome, {_currentStudent.FullName}!";
+                    lblInfo.Text = $"Student Number: {_currentStudent.StudentNumber ?? "N/A"} | Year Level: {_currentStudent.YearLevel}";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading student data:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void InitializeComponent()
@@ -32,18 +54,20 @@ namespace StudentAssessmentSystem.UI.Forms.Student
             this.Size = new Size(500, 400);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.WhiteSmoke;
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
 
             // Welcome Label
             lblWelcome = new Label();
-            lblWelcome.Text = $"Welcome, {_currentStudent.FullName}!";
+            lblWelcome.Text = "Welcome, Student!";
             lblWelcome.Font = new Font("Arial", 16, FontStyle.Bold);
             lblWelcome.Location = new Point(20, 20);
             lblWelcome.Size = new Size(450, 30);
             this.Controls.Add(lblWelcome);
 
             // Student info
-            Label lblInfo = new Label();
-            lblInfo.Text = $"Student Number: {_currentStudent.StudentNumber} | Year Level: {_currentStudent.YearLevel}";
+            lblInfo = new Label();
+            lblInfo.Text = "Loading student information...";
             lblInfo.Location = new Point(20, 55);
             lblInfo.Size = new Size(450, 20);
             lblInfo.Font = new Font("Arial", 10);
@@ -92,31 +116,48 @@ namespace StudentAssessmentSystem.UI.Forms.Student
 
         private void BtnTakeTest_Click(object sender, EventArgs e)
         {
-            // Open Available Tests Form
-            AvailableTestsForm form = new AvailableTestsForm();
-            form.ShowDialog();
+            try
+            {
+                var form = new Teacher.AvailableTestsForm();
+                form.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening available tests:\n{ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void BtnMyResults_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("My Results feature coming soon!", "Info");
+            MessageBox.Show("My Results feature coming soon!", "Info",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void BtnLogout_Click(object sender, EventArgs e)
         {
-            DialogResult result = MessageBox.Show(
-                "Are you sure you want to logout?",
-                "Confirm Logout",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
-            );
-
-            if (result == DialogResult.Yes)
+            try
             {
-                SessionManager.Logout();
-                LoginForm loginForm = new LoginForm();
-                loginForm.Show();
-                this.Close();
+                DialogResult result = MessageBox.Show(
+                    "Are you sure you want to logout?",
+                    "Confirm Logout",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question
+                );
+
+                if (result == DialogResult.Yes)
+                {
+                    SessionManager.Logout();
+
+                    var loginForm = new StudentAssessmentSystem.UI.Forms.LoginForm();
+                    loginForm.Show();
+                    this.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error during logout:\n{ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

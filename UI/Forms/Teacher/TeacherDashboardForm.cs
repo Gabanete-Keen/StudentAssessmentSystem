@@ -1,59 +1,76 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Drawing;
 using System.Windows.Forms;
 using StudentAssessmentSystem.Utilities;
-using StudentAssessmentSystem.Models.Users;
-using System.Drawing;
 
-
-// Purpose: Main dashboard for teachers
-// Connected to: TestManager, QuestionBankManager
 namespace StudentAssessmentSystem.UI.Forms.Teacher
 {
-    using StudentAssessmentSystem.Models.Users;
     public partial class TeacherDashboardForm : Form
     {
-        private Teacher _currentTeacher;
+        private Models.Users.Teacher _currentTeacher;
 
-        // UI Controls
         private Label lblWelcome;
+        private Label lblDept;
         private GroupBox grpQuickActions;
         private Button btnCreateTest;
         private Button btnMyTests;
         private Button btnQuestionBank;
         private Button btnViewAnalysis;
         private Button btnLogout;
+        private Label lblInfo;
 
         public TeacherDashboardForm()
         {
-            // Get current teacher from session
-            _currentTeacher = SessionManager.CurrentUser as Teacher;
+            try
+            {
+                InitializeComponent();
+                LoadTeacherData();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error initializing teacher dashboard:\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
+                    "Initialization Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
 
-            InitializeComponent();
+        private void LoadTeacherData()
+        {
+            try
+            {
+                _currentTeacher = SessionManager.CurrentUser as Models.Users.Teacher;
+
+                if (_currentTeacher != null)
+                {
+                    lblWelcome.Text = $"Welcome, {_currentTeacher.FullName}!";
+                    lblDept.Text = $"Department: {_currentTeacher.Department ?? "Not Assigned"}";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading teacher data:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void InitializeComponent()
         {
-            // Form properties
             this.Text = "Teacher Dashboard";
             this.Size = new Size(600, 450);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.WhiteSmoke;
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
 
             // Welcome Label
             lblWelcome = new Label();
-            lblWelcome.Text = $"Welcome, {_currentTeacher.FullName}!";
+            lblWelcome.Text = "Welcome, Teacher!";
             lblWelcome.Font = new Font("Arial", 16, FontStyle.Bold);
             lblWelcome.Location = new Point(20, 20);
             lblWelcome.Size = new Size(550, 30);
             this.Controls.Add(lblWelcome);
 
             // Department info
-            Label lblDept = new Label();
-            lblDept.Text = $"Department: {_currentTeacher.Department}";
+            lblDept = new Label();
+            lblDept.Text = "Department: Loading...";
             lblDept.Location = new Point(20, 55);
             lblDept.Size = new Size(400, 20);
             lblDept.Font = new Font("Arial", 10);
@@ -112,7 +129,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             grpQuickActions.Controls.Add(btnViewAnalysis);
 
             // Info Label
-            Label lblInfo = new Label();
+            lblInfo = new Label();
             lblInfo.Text = "Click on any button above to get started!";
             lblInfo.Location = new Point(30, 180);
             lblInfo.Size = new Size(470, 60);
@@ -132,51 +149,70 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             this.Controls.Add(btnLogout);
         }
 
-        // Button Click Handlers
-
         private void BtnCreateTest_Click(object sender, EventArgs e)
         {
-            // Open Test Creation Form
-            TestCreationForm form = new TestCreationForm();
-            form.ShowDialog(); // Modal dialog
+            try
+            {
+                TestCreationForm form = new TestCreationForm();
+                form.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening test creation form:\n{ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void BtnMyTests_Click(object sender, EventArgs e)
         {
-            // Open My Tests Form
-            MyTestsForm form = new MyTestsForm();
-            form.ShowDialog();
+            try
+            {
+                MyTestsForm form = new MyTestsForm();
+                form.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening my tests:\n{ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void BtnQuestionBank_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Question Bank feature coming soon!", "Info");
+            MessageBox.Show("Question Bank feature coming soon!", "Info",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void BtnViewAnalysis_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Item Analysis feature coming soon!", "Info");
+            MessageBox.Show("Item Analysis feature coming soon!", "Info",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void BtnLogout_Click(object sender, EventArgs e)
         {
-            DialogResult result = MessageBox.Show(
-                "Are you sure you want to logout?",
-                "Confirm Logout",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
-            );
-
-            if (result == DialogResult.Yes)
+            try
             {
-                SessionManager.Logout();
+                DialogResult result = MessageBox.Show(
+                    "Are you sure you want to logout?",
+                    "Confirm Logout",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question
+                );
 
-                // Show login form again
-                LoginForm loginForm = new LoginForm();
-                loginForm.Show();
+                if (result == DialogResult.Yes)
+                {
+                    SessionManager.Logout();
 
-                // Close this dashboard
-                this.Close();
+                    var loginForm = new StudentAssessmentSystem.UI.Forms.LoginForm();
+                    loginForm.Show();
+                    this.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error during logout:\n{ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
