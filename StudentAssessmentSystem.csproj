@@ -105,6 +105,10 @@
     <Compile Include="BusinessLogic\Managers\ScoringManager.cs" />
     <Compile Include="BusinessLogic\Managers\TestManager.cs" />
     <Compile Include="BusinessLogic\Managers\UserManager.cs" />
+    <Compile Include="BusinessLogic\Services\AuthenticationService.cs" />
+    <Compile Include="BusinessLogic\Services\ReportService.cs" />
+    <Compile Include="BusinessLogic\Services\ScoringService.cs" />
+    <Compile Include="BusinessLogic\Services\ValidationService.cs" />
     <Compile Include="DataAccess\DatabaseConnection.cs" />
     <Compile Include="DataAccess\Repositories\IRepository.cs" />
     <Compile Include="DataAccess\Repositories\StudentAnswerRepository.cs" />

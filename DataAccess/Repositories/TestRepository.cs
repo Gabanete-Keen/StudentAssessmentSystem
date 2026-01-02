@@ -7,9 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
-using StudentAssessmentSystem.Models.Assessment;
-using StudentAssessmentSystem.Models.Enums;
 
 // Purpose: Handles all MySQL database operations for Tests
 // Connected to: Test model, TestManager
@@ -551,6 +548,43 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
             catch (Exception ex)
             {
                 throw new Exception($"Error getting test results: {ex.Message}", ex);
+            }
+
+            return results;
+        }
+
+        public List<TestResult> GetResultsByInstance(int testInstanceId)
+        {
+            List<TestResult> results = new List<TestResult>();
+
+            try
+            {
+                using (var conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+
+                    string query = @"SELECT * FROM TestResults 
+                                   WHERE InstanceId = @InstanceId 
+                                   AND IsCompleted = TRUE
+                                   ORDER BY RawScore DESC";
+
+                    using (var cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@InstanceId", testInstanceId);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                results.Add(MapReaderToTestResult(reader));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error getting results by instance: {ex.Message}", ex);
             }
 
             return results;
