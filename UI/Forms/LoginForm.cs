@@ -1,28 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
 using System.Windows.Forms;
 using StudentAssessmentSystem.BusinessLogic.Managers;
 using StudentAssessmentSystem.BusinessLogic.Services;
 using StudentAssessmentSystem.Models.Users;
 using StudentAssessmentSystem.Models.Enums;
-using StudentAssessmentSystem.UI.Forms.Teacher;
-using StudentAssessmentSystem.UI.Forms.Student;
 using StudentAssessmentSystem.Utilities;
-using StudentAssessmentSystem.UI.Forms.Admin;
-// Purpose: Login form for the Student Assessment System
+
 namespace StudentAssessmentSystem.UI.Forms
 {
     public partial class LoginForm : Form
     {
-        // Managers for authentication
         private readonly UserManager _userManager;
         private readonly AuthenticationService _authService;
 
-        // UI Controls
         private Label lblTitle;
         private Label lblUsername;
         private Label lblPassword;
@@ -33,19 +24,13 @@ namespace StudentAssessmentSystem.UI.Forms
 
         public LoginForm()
         {
-            // Initialize managers
             _userManager = new UserManager();
             _authService = new AuthenticationService();
-
-            // Setup the form
             InitializeComponent();
         }
 
-       
-        /// Sets up all the UI controls - Simple design!
         private void InitializeComponent()
         {
-            // Form properties
             this.Text = "Student Assessment System - Login";
             this.Size = new Size(400, 300);
             this.StartPosition = FormStartPosition.CenterScreen;
@@ -89,7 +74,7 @@ namespace StudentAssessmentSystem.UI.Forms
             txtPassword.Size = new Size(300, 25);
             txtPassword.Font = new Font("Arial", 10);
             txtPassword.PasswordChar = '*';
-            txtPassword.KeyPress += TxtPassword_KeyPress; // Allow Enter key to login
+            txtPassword.KeyPress += TxtPassword_KeyPress;
             this.Controls.Add(txtPassword);
 
             // Login Button
@@ -115,11 +100,9 @@ namespace StudentAssessmentSystem.UI.Forms
             this.Controls.Add(btnExit);
         }
 
-        /// Handles the Login button click
-        /// This is where authentication happens
         private void BtnLogin_Click(object sender, EventArgs e)
         {
-            // Validation: Check if fields are empty
+            // Validation
             if (string.IsNullOrWhiteSpace(txtUsername.Text))
             {
                 MessageBox.Show("Please enter your username.",
@@ -142,12 +125,11 @@ namespace StudentAssessmentSystem.UI.Forms
 
             try
             {
-                // Disable button to prevent double-click
                 btnLogin.Enabled = false;
                 btnLogin.Text = "Logging in...";
                 this.Cursor = Cursors.WaitCursor;
 
-                // AUTHENTICATION: Try to login
+                // Authenticate
                 User authenticatedUser = _authService.Authenticate(
                     txtUsername.Text.Trim(),
                     txtPassword.Text
@@ -155,12 +137,10 @@ namespace StudentAssessmentSystem.UI.Forms
 
                 if (authenticatedUser != null)
                 {
-                    // SUCCESS: User found and password correct
-
-                    // Store user in session
+                    // SUCCESS
                     SessionManager.CurrentUser = authenticatedUser;
 
-                    // Update last login time in database
+                    // Update last login
                     _userManager.UpdateLastLogin(authenticatedUser.UserId);
 
                     // Show welcome message
@@ -169,16 +149,34 @@ namespace StudentAssessmentSystem.UI.Forms
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Information);
 
-                    // Open appropriate dashboard based on user role
-                    this.Hide(); // Hide login form
-                    OpenDashboardForUser(authenticatedUser);
+                    // Open dashboard and handle form closure properly
+                    Form dashboardForm = CreateDashboardForUser(authenticatedUser);
 
-                    // Close login form after dashboard is shown
-                    this.Close();
+                    if (dashboardForm != null)
+                    {
+                        // Hide login form first
+                        this.Hide();
+
+                        // Show dashboard
+                        dashboardForm.Show();
+
+                        // Close login form when dashboard closes
+                        dashboardForm.FormClosed += (s, args) => {
+                            this.Close();
+                            Application.Exit();
+                        };
+                    }
+                    else
+                    {
+                        MessageBox.Show("Could not create dashboard!", "Error");
+                        btnLogin.Enabled = true;
+                        btnLogin.Text = "Login";
+                        this.Cursor = Cursors.Default;
+                    }
                 }
                 else
                 {
-                    // FAILURE: Wrong username or password
+                    // FAILURE
                     MessageBox.Show(
                         "Invalid username or password.\nPlease try again.",
                         "Login Failed",
@@ -186,73 +184,76 @@ namespace StudentAssessmentSystem.UI.Forms
                         MessageBoxIcon.Error
                     );
 
-                    // Clear password field for security
                     txtPassword.Clear();
                     txtPassword.Focus();
+
+                    btnLogin.Enabled = true;
+                    btnLogin.Text = "Login";
+                    this.Cursor = Cursors.Default;
                 }
             }
             catch (Exception ex)
             {
-                // ERROR: Something went wrong
                 MessageBox.Show(
-                    $"An error occurred during login:\n{ex.Message}",
+                    $"An error occurred during login:\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
                     "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
-            }
-            finally
-            {
-                // Re-enable button and restore cursor
+
                 btnLogin.Enabled = true;
                 btnLogin.Text = "Login";
                 this.Cursor = Cursors.Default;
             }
         }
 
-        /// Opens the correct dashboard based on user role
-        /// Admin → AdminDashboardForm
-        /// Teacher → TeacherDashboardForm
-        /// Student → StudentDashboardForm
-        private void OpenDashboardForUser(User user)
+      
+        private Form CreateDashboardForUser(User user)
         {
-            Form dashboardForm = null;
-
-            // POLYMORPHISM: Different forms for different user types
-            switch (user.Role)
+            try
             {
-                case UserRole.Admin:
-                    dashboardForm = new AdminDashboardForm();
-                    break;
+                Form dashboardForm = null;
 
-                case UserRole.Teacher:
-                    dashboardForm = new TeacherDashboardForm();
-                    break;
+                switch (user.Role)
+                {
+                    case UserRole.Admin:
+                        dashboardForm = new Admin.AdminDashboardForm();
+                        break;
 
-                case UserRole.Student:
-                    dashboardForm = new StudentDashboardForm();
-                    break;
+                    case UserRole.Teacher:
+                        dashboardForm = new Teacher.TeacherDashboardForm();
+                        break;
 
-                default:
-                    MessageBox.Show("Unknown user role!", "Error");
-                    return;
+                    case UserRole.Student:
+                        dashboardForm = new Student.StudentDashboardForm();
+                        break;
+
+                    default:
+                        MessageBox.Show("Unknown user role!", "Error");
+                        return null;
+                }
+
+                return dashboardForm;
             }
-
-            // When dashboard closes, close the entire application
-            dashboardForm.FormClosed += (s, args) => Application.Exit();
-            dashboardForm.Show();
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Error creating dashboard:\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
+                    "Dashboard Creation Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+                return null;
+            }
         }
 
-      
-        /// Allows pressing Enter key to login
         private void TxtPassword_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)Keys.Enter)
             {
                 BtnLogin_Click(sender, e);
-                e.Handled = true; // Prevent beep sound
+                e.Handled = true;
             }
         }
     }
 }
-
