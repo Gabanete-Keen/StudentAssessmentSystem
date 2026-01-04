@@ -185,8 +185,16 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
 
         private void BtnViewAnalysis_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Item Analysis feature coming soon!", "Info",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            try
+            {
+                ItemAnalysisForm form = new ItemAnalysisForm();
+                form.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening item analysis:\n{ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void BtnLogout_Click(object sender, EventArgs e)
