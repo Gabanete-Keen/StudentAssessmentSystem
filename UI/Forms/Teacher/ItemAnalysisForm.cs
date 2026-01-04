@@ -1,12 +1,13 @@
-﻿using System;
+﻿using StudentAssessmentSystem.BusinessLogic.Analysis;
+using StudentAssessmentSystem.DataAccess;
+using StudentAssessmentSystem.DataAccess.Repositories;
+using StudentAssessmentSystem.Models.Assessment;
+using StudentAssessmentSystem.Models.Results;
+using StudentAssessmentSystem.Utilities;
+using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Collections.Generic;
-using StudentAssessmentSystem.BusinessLogic.Analysis;
-using StudentAssessmentSystem.DataAccess.Repositories;
-using StudentAssessmentSystem.Models.Results;
-using StudentAssessmentSystem.Models.Assessment;
-using StudentAssessmentSystem.Utilities;
 
 namespace StudentAssessmentSystem.UI.Forms.Teacher
 {
@@ -249,17 +250,45 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             }
         }
 
+       
+        /// Gets the first available test instance for the given test
+        /// this should allow teachers to select which administration to analyze
         private int CreateDemoTestInstance(int testId)
         {
-            // This is a placeholder
-            // In a real system, you would:
-            // 1. Get all test instances for this test
-            // 2. Let teacher select which administration to analyze
-            // 3. Return the selected instance ID
+            try
+            {
+                using (var connection = DatabaseConnection.GetConnection())
+                {
+                    connection.Open();
+                    string query = @"
+                SELECT InstanceId 
+                FROM TestInstances 
+                WHERE TestId = @TestId 
+                  AND IsActive = 1
+                ORDER BY StartDateTime DESC 
+                LIMIT 1";
 
-            // For now, return 1 (you'll need to create test instances when students take tests)
-            return 1;
+                    using (var cmd = new MySql.Data.MySqlClient.MySqlCommand(query, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@TestId", testId);
+                        var result = cmd.ExecuteScalar();
+
+                        if (result != null)
+                        {
+                            return Convert.ToInt32(result);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error retrieving test instance:\n{ex.Message}", "Database Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            return 0; // No instance found
         }
+
 
         private void PerformAnalysis(int testInstanceId)
         {
