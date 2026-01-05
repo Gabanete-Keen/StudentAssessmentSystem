@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 using StudentAssessmentSystem.BusinessLogic.Managers;
+using StudentAssessmentSystem.DataAccess.Repositories; // ✅ ADDED
 using StudentAssessmentSystem.Models.Assessment;
 using StudentAssessmentSystem.Models.Enums;
 
@@ -9,9 +10,10 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
 {
     public partial class AddQuestionForm : Form
     {
+        // ✅ PRIVATE FIELDS
         private int _testId;
-        private QuestionBankManager _questionManager;
         private int _currentQuestionNumber;
+        private QuestionBankManager _questionManager;
 
         // UI Controls
         private Label lblTitle;
@@ -35,6 +37,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
         private RadioButton rdoCorrectC;
         private RadioButton rdoCorrectD;
 
+        // Buttons
         private Button btnSaveAndNext;
         private Button btnSaveAndClose;
         private Button btnCancel;
@@ -50,7 +53,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
 
         private void InitializeComponent()
         {
-            this.Text = $"Add Question #{_currentQuestionNumber}";
+            this.Text = $"Add Question {_currentQuestionNumber}";
             this.Size = new Size(700, 600);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.White;
@@ -59,16 +62,16 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
 
             int yPos = 20;
 
-            // Title
+            // ===== Title =====
             lblTitle = new Label();
-            lblTitle.Text = $"Question #{_currentQuestionNumber}";
+            lblTitle.Text = $"Question {_currentQuestionNumber}";
             lblTitle.Font = new Font("Arial", 14, FontStyle.Bold);
             lblTitle.Location = new Point(20, yPos);
             lblTitle.Size = new Size(650, 30);
             this.Controls.Add(lblTitle);
             yPos += 40;
 
-            // Question Text
+            // ===== Question Text =====
             lblQuestionText = new Label();
             lblQuestionText.Text = "Question Text:";
             lblQuestionText.Location = new Point(20, yPos);
@@ -85,7 +88,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             this.Controls.Add(txtQuestionText);
             yPos += 70;
 
-            // Points and Difficulty
+            // ===== Points and Difficulty =====
             lblPoints = new Label();
             lblPoints.Text = "Points:";
             lblPoints.Location = new Point(20, yPos);
@@ -129,7 +132,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             this.Controls.Add(cmbCognitive);
             yPos += 40;
 
-            // Choices Label
+            // ===== Choices Label =====
             lblChoices = new Label();
             lblChoices.Text = "Answer Choices (Select the correct answer):";
             lblChoices.Font = new Font("Arial", 10, FontStyle.Bold);
@@ -138,7 +141,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             this.Controls.Add(lblChoices);
             yPos += 30;
 
-            // Choice A
+            // ===== Choice A =====
             rdoCorrectA = new RadioButton();
             rdoCorrectA.Location = new Point(20, yPos);
             rdoCorrectA.Size = new Size(30, 25);
@@ -159,7 +162,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             this.Controls.Add(txtChoiceA);
             yPos += 35;
 
-            // Choice B
+            // ===== Choice B =====
             rdoCorrectB = new RadioButton();
             rdoCorrectB.Location = new Point(20, yPos);
             rdoCorrectB.Size = new Size(30, 25);
@@ -179,7 +182,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             this.Controls.Add(txtChoiceB);
             yPos += 35;
 
-            // Choice C
+            // ===== Choice C =====
             rdoCorrectC = new RadioButton();
             rdoCorrectC.Location = new Point(20, yPos);
             rdoCorrectC.Size = new Size(30, 25);
@@ -199,7 +202,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             this.Controls.Add(txtChoiceC);
             yPos += 35;
 
-            // Choice D
+            // ===== Choice D =====
             rdoCorrectD = new RadioButton();
             rdoCorrectD.Location = new Point(20, yPos);
             rdoCorrectD.Size = new Size(30, 25);
@@ -219,7 +222,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             this.Controls.Add(txtChoiceD);
             yPos += 50;
 
-            // Buttons
+            // ===== Buttons =====
             btnSaveAndNext = new Button();
             btnSaveAndNext.Text = "Save & Add Another";
             btnSaveAndNext.Location = new Point(280, yPos);
@@ -257,8 +260,8 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
                 // Clear form for next question
                 ClearForm();
                 _currentQuestionNumber++;
-                lblTitle.Text = $"Question #{_currentQuestionNumber}";
-                this.Text = $"Add Question #{_currentQuestionNumber}";
+                lblTitle.Text = $"Question {_currentQuestionNumber}";
+                this.Text = $"Add Question {_currentQuestionNumber}";
                 txtQuestionText.Focus();
             }
         }
@@ -267,14 +270,16 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
         {
             if (SaveQuestion())
             {
-                MessageBox.Show($"Question #{_currentQuestionNumber} saved successfully!\n\n" +
-                    "You can now administer this test to students.",
+                MessageBox.Show($"Question {_currentQuestionNumber} saved successfully! You can now administer this test to students.",
                     "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
         }
 
+        /// <summary>
+        /// ✅ FIXED: Saves question directly using QuestionRepository
+        /// </summary>
         private bool SaveQuestion()
         {
             // Validation
@@ -295,38 +300,35 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
 
             try
             {
-                // Create question
+                // ✅ Create question WITH TestId
                 var question = new MultipleChoiceQuestion
                 {
-                    TestId = _testId,
+                    TestId = _testId, // ✅ USE _testId (with underscore)
                     QuestionText = txtQuestionText.Text.Trim(),
+                    QuestionType = "MultipleChoice",
                     PointValue = (int)numPoints.Value,
                     DifficultyLevel = (DifficultyLevel)Enum.Parse(typeof(DifficultyLevel), cmbDifficulty.SelectedItem.ToString()),
                     CognitiveLevel = (CognitiveLevel)Enum.Parse(typeof(CognitiveLevel), cmbCognitive.SelectedItem.ToString()),
-                    OrderNumber = _currentQuestionNumber
+                    OrderNumber = _currentQuestionNumber // ✅ USE _currentQuestionNumber (with underscore)
                 };
 
                 // Add choices
                 int choiceOrder = 1;
                 if (!string.IsNullOrWhiteSpace(txtChoiceA.Text))
-                {
                     question.AddChoice(txtChoiceA.Text.Trim(), rdoCorrectA.Checked, choiceOrder++);
-                }
-                if (!string.IsNullOrWhiteSpace(txtChoiceB.Text))
-                {
-                    question.AddChoice(txtChoiceB.Text.Trim(), rdoCorrectB.Checked, choiceOrder++);
-                }
-                if (!string.IsNullOrWhiteSpace(txtChoiceC.Text))
-                {
-                    question.AddChoice(txtChoiceC.Text.Trim(), rdoCorrectC.Checked, choiceOrder++);
-                }
-                if (!string.IsNullOrWhiteSpace(txtChoiceD.Text))
-                {
-                    question.AddChoice(txtChoiceD.Text.Trim(), rdoCorrectD.Checked, choiceOrder++);
-                }
 
-                // Save to database
-                int questionId = _questionManager.AddToQuestionBank(question, out string errorMessage);
+                if (!string.IsNullOrWhiteSpace(txtChoiceB.Text))
+                    question.AddChoice(txtChoiceB.Text.Trim(), rdoCorrectB.Checked, choiceOrder++);
+
+                if (!string.IsNullOrWhiteSpace(txtChoiceC.Text))
+                    question.AddChoice(txtChoiceC.Text.Trim(), rdoCorrectC.Checked, choiceOrder++);
+
+                if (!string.IsNullOrWhiteSpace(txtChoiceD.Text))
+                    question.AddChoice(txtChoiceD.Text.Trim(), rdoCorrectD.Checked, choiceOrder++);
+
+                // ✅ SAVE DIRECTLY USING QuestionRepository (NOT QuestionBankManager)
+                var questionRepo = new QuestionRepository();
+                int questionId = questionRepo.AddQuestion(question);
 
                 if (questionId > 0)
                 {
@@ -334,15 +336,15 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
                 }
                 else
                 {
-                    MessageBox.Show($"Failed to save question:\n{errorMessage}", "Error",
+                    MessageBox.Show("Failed to save question.", "Error",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving question:\n{ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error saving question: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
         }

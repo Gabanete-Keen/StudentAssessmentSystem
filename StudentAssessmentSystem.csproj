@@ -158,10 +158,16 @@
     <Compile Include="UI\Forms\Teacher\AvailableTestsForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="UI\Forms\Teacher\EditQuestionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="UI\Forms\Teacher\ItemAnalysisForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="UI\Forms\Teacher\ItemAnalyzerTestForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\Forms\Teacher\ManageQuestionsForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="UI\Forms\Teacher\MyTestsForm.cs">

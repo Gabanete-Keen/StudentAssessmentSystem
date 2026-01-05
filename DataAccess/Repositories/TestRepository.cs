@@ -537,6 +537,220 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
 
             return choices;
         }
+      
+        /// UPDATES an existing question and its choices
+        public bool UpdateQuestion(MultipleChoiceQuestion question, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+
+            try
+            {
+                using (var conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+
+                    // Start transaction to ensure data consistency
+                    using (var transaction = conn.BeginTransaction())
+                    {
+                        try
+                        {
+                            // Update question
+                            string questionQuery = @"
+                        UPDATE Questions 
+                        SET QuestionText = @QuestionText,
+                            PointValue = @PointValue,
+                            DifficultyLevel = @DifficultyLevel,
+                            CognitiveLevel = @CognitiveLevel,
+                            Topic = @Topic,
+                            Explanation = @Explanation,
+                            OrderNumber = @OrderNumber
+                        WHERE QuestionId = @QuestionId";
+
+                            using (var cmd = new MySqlCommand(questionQuery, conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@QuestionId", question.QuestionId);
+                                cmd.Parameters.AddWithValue("@QuestionText", question.QuestionText);
+                                cmd.Parameters.AddWithValue("@PointValue", question.PointValue);
+                                cmd.Parameters.AddWithValue("@DifficultyLevel", question.DifficultyLevel.ToString());
+                                cmd.Parameters.AddWithValue("@CognitiveLevel", question.CognitiveLevel.ToString());
+                                cmd.Parameters.AddWithValue("@Topic", question.Topic ?? (object)DBNull.Value);
+                                cmd.Parameters.AddWithValue("@Explanation", question.Explanation ?? (object)DBNull.Value);
+                                cmd.Parameters.AddWithValue("@OrderNumber", question.OrderNumber);
+
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            // Delete old choices
+                            string deleteChoicesQuery = "DELETE FROM QuestionChoices WHERE QuestionId = @QuestionId";
+                            using (var cmd = new MySqlCommand(deleteChoicesQuery, conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@QuestionId", question.QuestionId);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            // Insert new choices
+                            if (question.Choices != null && question.Choices.Count > 0)
+                            {
+                                string insertChoiceQuery = @"
+                            INSERT INTO QuestionChoices (QuestionId, ChoiceText, IsCorrect, OrderNumber)
+                            VALUES (@QuestionId, @ChoiceText, @IsCorrect, @OrderNumber)";
+
+                                foreach (var choice in question.Choices)
+                                {
+                                    using (var cmd = new MySqlCommand(insertChoiceQuery, conn, transaction))
+                                    {
+                                        cmd.Parameters.AddWithValue("@QuestionId", question.QuestionId);
+                                        cmd.Parameters.AddWithValue("@ChoiceText", choice.ChoiceText);
+                                        cmd.Parameters.AddWithValue("@IsCorrect", choice.IsCorrect);
+                                        cmd.Parameters.AddWithValue("@OrderNumber", choice.OrderNumber);
+                                        cmd.ExecuteNonQuery();
+                                    }
+                                }
+                            }
+
+                            // Commit transaction
+                            transaction.Commit();
+                            return true;
+                        }
+                        catch (Exception ex)
+                        {
+                            transaction.Rollback();
+                            errorMessage = $"Transaction failed: {ex.Message}";
+                            return false;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Error updating question: {ex.Message}";
+                return false;
+            }
+        }
+
+       
+        /// DELETES a question and its choices (soft delete - can be changed to hard delete)
+        public bool DeleteQuestion(int questionId, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+
+            try
+            {
+                using (var conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+
+                    using (var transaction = conn.BeginTransaction())
+                    {
+                        try
+                        {
+                            // First, check if question has been answered by students
+                            string checkQuery = "SELECT COUNT(*) FROM StudentAnswers WHERE QuestionId = @QuestionId";
+                            using (var cmd = new MySqlCommand(checkQuery, conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@QuestionId", questionId);
+                                int answerCount = Convert.ToInt32(cmd.ExecuteScalar());
+
+                                if (answerCount > 0)
+                                {
+                                    errorMessage = "Cannot delete question - students have already answered it.";
+                                    return false;
+                                }
+                            }
+
+                            // Delete choices first (foreign key constraint)
+                            string deleteChoicesQuery = "DELETE FROM QuestionChoices WHERE QuestionId = @QuestionId";
+                            using (var cmd = new MySqlCommand(deleteChoicesQuery, conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@QuestionId", questionId);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            // Delete question
+                            string deleteQuestionQuery = "DELETE FROM Questions WHERE QuestionId = @QuestionId";
+                            using (var cmd = new MySqlCommand(deleteQuestionQuery, conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@QuestionId", questionId);
+                                int rowsAffected = cmd.ExecuteNonQuery();
+
+                                if (rowsAffected == 0)
+                                {
+                                    errorMessage = "Question not found.";
+                                    return false;
+                                }
+                            }
+
+                            transaction.Commit();
+                            return true;
+                        }
+                        catch (Exception ex)
+                        {
+                            transaction.Rollback();
+                            errorMessage = $"Transaction failed: {ex.Message}";
+                            return false;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Error deleting question: {ex.Message}";
+                return false;
+            }
+        }
+
+      
+        /// GETS a single question with its choices by QuestionId
+        public MultipleChoiceQuestion GetQuestionById(int questionId)
+        {
+            try
+            {
+                using (var conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+
+                    string query = "SELECT * FROM Questions WHERE QuestionId = @QuestionId";
+                    using (var cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@QuestionId", questionId);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                var question = new MultipleChoiceQuestion
+                                {
+                                    QuestionId = reader.GetInt32("QuestionId"),
+                                    TestId = reader.IsDBNull(reader.GetOrdinal("TestId")) ? (int?)null : reader.GetInt32("TestId"),
+                                    QuestionText = reader.GetString("QuestionText"),
+                                    QuestionType = reader.GetString("QuestionType"),
+                                    PointValue = reader.GetInt32("PointValue"),
+                                    DifficultyLevel = (DifficultyLevel)Enum.Parse(typeof(DifficultyLevel), reader.GetString("DifficultyLevel")),
+                                    CognitiveLevel = (CognitiveLevel)Enum.Parse(typeof(CognitiveLevel), reader.GetString("CognitiveLevel")),
+                                    Topic = reader.IsDBNull(reader.GetOrdinal("Topic")) ? null : reader.GetString("Topic"),
+                                    Explanation = reader.IsDBNull(reader.GetOrdinal("Explanation")) ? null : reader.GetString("Explanation"),
+                                    OrderNumber = reader.GetInt32("OrderNumber")
+                                };
+
+                                reader.Close();
+
+                                // Load choices
+                                question.Choices = GetChoicesByQuestion(conn, questionId);
+
+                                return question;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error getting question: {ex.Message}", ex);
+            }
+
+            return null;
+        }
+
     }
 
     // ============================================

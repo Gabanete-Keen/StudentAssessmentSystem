@@ -76,6 +76,85 @@ namespace StudentAssessmentSystem.BusinessLogic.Managers
                     throw new Exception($"Error getting questions: {ex.Message}", ex);
                 }
             }
+       
+        /// UPDATES an existing question
+        public bool UpdateQuestion(MultipleChoiceQuestion question, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+
+            try
+            {
+                // Validation
+                if (question.QuestionId <= 0)
+                {
+                    errorMessage = "Invalid question ID.";
+                    return false;
+                }
+
+                if (string.IsNullOrWhiteSpace(question.QuestionText))
+                {
+                    errorMessage = "Question text is required.";
+                    return false;
+                }
+
+                if (question.Choices == null || question.Choices.Count < 2)
+                {
+                    errorMessage = "Question must have at least 2 choices.";
+                    return false;
+                }
+
+                if (!question.Choices.Any(c => c.IsCorrect))
+                {
+                    errorMessage = "Question must have at least one correct answer.";
+                    return false;
+                }
+
+                // Update in repository
+                return _questionRepository.UpdateQuestion(question, out errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Error updating question: {ex.Message}";
+                return false;
+            }
+        }
+
+       
+        /// DELETES a question
+        public bool DeleteQuestion(int questionId, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+
+            try
+            {
+                if (questionId <= 0)
+                {
+                    errorMessage = "Invalid question ID.";
+                    return false;
+                }
+
+                return _questionRepository.DeleteQuestion(questionId, out errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Error deleting question: {ex.Message}";
+                return false;
+            }
+        }
+
+       
+        /// GETS a single question by ID
+        public MultipleChoiceQuestion GetQuestionById(int questionId)
+        {
+            try
+            {
+                return _questionRepository.GetQuestionById(questionId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error retrieving question: {ex.Message}", ex);
+            }
         }
     }
+}
 
