@@ -130,8 +130,8 @@ namespace StudentAssessmentSystem.UI.Forms.Student
 
         private void BtnMyResults_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("My Results feature coming soon!", "Info",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            StudentResultsForm resultsForm = new StudentResultsForm();
+            resultsForm.ShowDialog();
         }
 
         private void BtnLogout_Click(object sender, EventArgs e)

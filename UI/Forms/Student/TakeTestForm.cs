@@ -535,7 +535,7 @@ namespace StudentAssessmentSystem.UI.Forms.Student
         }
 
         
-        // SECTION 10: HELPER METHODS (Supporting functions)
+        // SECTION 10: HELPER METHODS (Supporting functions)    
         
         /// CALCULATES LETTER GRADE from percentage
         private string CalculateLetterGrade(decimal percentage)
