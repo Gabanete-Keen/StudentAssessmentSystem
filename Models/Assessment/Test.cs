@@ -36,6 +36,7 @@ namespace StudentAssessmentSystem.Models.Assessment
         public bool ShowCorrectAnswers { get; set; }
         public bool AllowReview { get; set; }
 
+
         // Metadata
         public DateTime CreatedDate { get; set; }
         public bool IsActive { get; set; }
@@ -55,10 +56,9 @@ namespace StudentAssessmentSystem.Models.Assessment
         
         public int QuestionCount => Questions?.Count ?? 0;
 
-        /// <summary>
+       
         /// Calculates total points from all questions
         /// DRY: Centralized calculation
-        /// </summary>
         public void CalculateTotalPoints()
         {
             TotalPoints = 0;

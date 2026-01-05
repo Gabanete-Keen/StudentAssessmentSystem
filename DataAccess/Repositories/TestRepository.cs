@@ -137,7 +137,79 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                 throw new Exception($"Error getting test by instance: {ex.Message}", ex);
             }
         }
-    
+
+     
+        /// Gets a test by its ID including all questions and choices
+        /// NEEDED FOR TEST-TAKING INTERFACE
+         public Test GetTestById(int testId)
+        {
+            try
+            {
+                using (var connection = DatabaseConnection.GetConnection())
+                {
+                    connection.Open();
+
+                    // Get the test details - using YOUR exact column names
+                    string testQuery = @"
+                SELECT TestId, SubjectId, TeacherId, TestTitle, Description, 
+                       TestType, TotalPoints, PassingScore, DurationMinutes, 
+                       Instructions, RandomizeQuestions, RandomizeChoices, 
+                       ShowCorrectAnswers, AllowReview, CreatedDate, IsActive
+                FROM Tests 
+                WHERE TestId = @TestId";
+
+                    Test test = null;
+
+                    using (var cmd = new MySqlCommand(testQuery, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@TestId", testId);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                test = new Test
+                                {
+                                    TestId = reader.GetInt32("TestId"),
+                                    SubjectId = reader.GetInt32("SubjectId"),
+                                    TeacherId = reader.GetInt32("TeacherId"),
+                                    TestTitle = reader.GetString("TestTitle"),
+                                    Description = reader.IsDBNull(reader.GetOrdinal("Description"))
+                                        ? "" : reader.GetString("Description"),
+                                    TestType = (TestType)Enum.Parse(typeof(TestType), reader.GetString("TestType")),
+                                    TotalPoints = reader.GetInt32("TotalPoints"),
+                                    PassingScore = reader.GetDecimal("PassingScore"),
+                                    DurationMinutes = reader.GetInt32("DurationMinutes"),
+                                    Instructions = reader.IsDBNull(reader.GetOrdinal("Instructions"))
+                                        ? "" : reader.GetString("Instructions"),
+                                    RandomizeQuestions = reader.GetBoolean("RandomizeQuestions"),
+                                    RandomizeChoices = reader.GetBoolean("RandomizeChoices"),
+                                    ShowCorrectAnswers = reader.GetBoolean("ShowCorrectAnswers"),
+                                    AllowReview = reader.GetBoolean("AllowReview"),
+                                    CreatedDate = reader.GetDateTime("CreatedDate"),
+                                    IsActive = reader.GetBoolean("IsActive")
+                                };
+                            }
+                        }
+                    }
+
+                    if (test == null)
+                        return null;
+
+                    // Get all questions for this test with their choices
+                    var questionRepo = new QuestionRepository();
+                    test.Questions = questionRepo.GetQuestionsByTest(testId).Cast<Question>().ToList();
+
+                    return test;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error getting test by ID: {ex.Message}", ex);
+            }
+        }
+
+
         /// Gets all active tests
         public List<Test> GetAll()
         {
@@ -304,7 +376,9 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                 CreatedDate = reader.GetDateTime("CreatedDate"),
                 IsActive = reader.GetBoolean("IsActive")
             };
+      
         }
+
     }
 
     // ============================================
@@ -607,6 +681,47 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                 Passed = reader.GetBoolean("Passed"),
                 IsCompleted = reader.GetBoolean("IsCompleted")
             };
-        } /// Adds a new test to MySQL database
+        }  /// Adds a new test to MySQL database
+
+
+        /// Updates an existing test result
+        /// NEEDED when student submits test
+        public bool Update(TestResult result)
+        {
+            try
+            {
+                using (var conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+
+                    string query = @"UPDATE TestResults SET 
+                           SubmitTime = @SubmitTime,
+                           RawScore = @RawScore,
+                           Percentage = @Percentage,
+                           LetterGrade = @LetterGrade,
+                           Passed = @Passed,
+                           IsCompleted = @IsCompleted
+                           WHERE ResultId = @ResultId";
+
+                    using (var cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@ResultId", result.ResultId);
+                        cmd.Parameters.AddWithValue("@SubmitTime", result.SubmitTime.HasValue ? (object)result.SubmitTime.Value : DBNull.Value);
+                        cmd.Parameters.AddWithValue("@RawScore", result.RawScore);
+                        cmd.Parameters.AddWithValue("@Percentage", result.Percentage);
+                        cmd.Parameters.AddWithValue("@LetterGrade", result.LetterGrade ?? "");
+                        cmd.Parameters.AddWithValue("@Passed", result.Passed);
+                        cmd.Parameters.AddWithValue("@IsCompleted", result.IsCompleted);
+
+                        int rowsAffected = cmd.ExecuteNonQuery();
+                        return rowsAffected > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error updating test result: {ex.Message}", ex);
+            }
+        }
     }
 }

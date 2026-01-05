@@ -146,6 +146,9 @@
     <Compile Include="UI\Forms\Student\StudentDashboardForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="UI\Forms\Student\TakeTestForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="UI\Forms\Teacher\AddQuestionForm.cs">
       <SubType>Form</SubType>
     </Compile>

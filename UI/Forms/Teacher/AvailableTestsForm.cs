@@ -1,4 +1,9 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using StudentAssessmentSystem.DataAccess;
+using StudentAssessmentSystem.DataAccess.Repositories;
+using StudentAssessmentSystem.UI.Forms.Student;
+using StudentAssessmentSystem.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -60,29 +65,121 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             this.Controls.Add(btnClose);
         }
 
+       
+        /// Loads available tests for the student
         private void LoadAvailableTests()
         {
-            // TODO: Load tests available for current student's sections
-            lstAvailableTests.Items.Add("Sample Midterm Exam - Data Structures");
-            lstAvailableTests.Items.Add("Quiz 1 - Introduction to Programming");
-            lstAvailableTests.Items.Add("Final Exam - Algorithms");
+            try
+            {
+                lstAvailableTests.Items.Clear();  // Use your actual ListBox name
+
+                int studentId = SessionManager.GetCurrentUserId();
+
+                // Get tests available to this student
+                var testRepository = new TestRepository();
+                var allTests = testRepository.GetAll();
+
+                foreach (var test in allTests)
+                {
+                    // Create an anonymous object with TestId AND display text
+                    var displayItem = new
+                    {
+                        TestId = test.TestId,           // Include this!
+                        TestTitle = test.TestTitle,
+                        DisplayText = $"{test.TestTitle}"
+                    };
+
+                    lstAvailableTests.Items.Add(displayItem);
+                }
+
+                // Set the display member
+                lstAvailableTests.DisplayMember = "DisplayText";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading tests:\n{ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
+
 
         private void BtnTakeTest_Click(object sender, EventArgs e)
         {
-            if (lstAvailableTests.SelectedIndex == -1)
+            // Check if a test is selected
+            if (lstAvailableTests.SelectedItem == null)
             {
-                MessageBox.Show("Please select a test to take.", "Selection Required",
+                MessageBox.Show("Please select a test first.", "Selection Required",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            MessageBox.Show("Taking test feature will be implemented next!", "Info",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            try
+            {
+                // Get the selected test - cast to dynamic to access properties
+                dynamic selectedTest = lstAvailableTests.SelectedItem;
 
-            // TODO: Open TakeTestForm
-            // TakeTestForm form = new TakeTestForm(selectedTestId);
-            // form.ShowDialog();
+                // Now you can access TestId
+                int testId = (int)selectedTest.TestId;  // ✅ Cast to int
+
+                // Get the first active instance of this test
+                int instanceId = GetTestInstanceId(testId);
+
+                if (instanceId == 0)
+                {
+                    MessageBox.Show("No active test instance found.\n\n" +
+                        "Please contact your teacher.", "Not Available",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                // Open the TakeTestForm
+                TakeTestForm takeTestForm = new TakeTestForm(testId, instanceId);
+                takeTestForm.ShowDialog();
+
+                // Refresh the list after test is completed
+                LoadAvailableTests();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error starting test:\n{ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Gets the active test instance ID for a test
+        /// </summary>
+        private int GetTestInstanceId(int testId)
+        {
+            try
+            {
+                using (var connection = DatabaseConnection.GetConnection())
+                {
+                    connection.Open();
+
+                    string query = @"
+                SELECT InstanceId 
+                FROM TestInstances 
+                WHERE TestId = @TestId 
+                  AND IsActive = 1
+                ORDER BY StartDateTime DESC 
+                LIMIT 1";
+
+                    using (var cmd = new MySqlCommand(query, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@TestId", testId);
+                        var result = cmd.ExecuteScalar();
+                        return result != null ? Convert.ToInt32(result) : 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error getting test instance:\n{ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return 0;
+            }
         }
     }
 }
+
