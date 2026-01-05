@@ -2,7 +2,6 @@
 using StudentAssessmentSystem.BusinessLogic.Managers;
 using StudentAssessmentSystem.DataAccess;
 using StudentAssessmentSystem.DataAccess.Repositories;
-using StudentAssessmentSystem.Models.Assessment;
 using StudentAssessmentSystem.Utilities;
 using System;
 using System.Collections.Generic;

@@ -115,6 +115,7 @@
     <Compile Include="DataAccess\DatabaseConnection.cs" />
     <Compile Include="DataAccess\Repositories\IRepository.cs" />
     <Compile Include="DataAccess\Repositories\StudentAnswerRepository.cs" />
+    <Compile Include="DataAccess\Repositories\TestInstanceRepository.cs" />
     <Compile Include="DataAccess\Repositories\TestRepository.cs" />
     <Compile Include="DataAccess\Repositories\UserRepositories.cs" />
     <Compile Include="Models\Academic\Section.cs" />
@@ -174,6 +175,9 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="UI\Forms\Teacher\TeacherDashboardForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\Forms\Teacher\TestAdministrationForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="UI\Forms\Teacher\TestCreationForm.cs">

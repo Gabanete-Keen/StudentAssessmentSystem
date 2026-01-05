@@ -16,7 +16,8 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
         private Button btnCreateTest;
         private Button btnMyTests;
         private Button btnQuestionBank;
-        private Button btnManageQuestions; // NEW BUTTON
+        private Button btnManageQuestions;
+        private Button btnAdministerTest; // ✅ NEW: Test Administration Button
         private Button btnViewAnalysis;
         private Button btnLogout;
         private Label lblInfo;
@@ -56,7 +57,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
         private void InitializeComponent()
         {
             this.Text = "Teacher Dashboard";
-            this.Size = new Size(600, 500); // Increased height
+            this.Size = new Size(600, 550); // ✅ Increased height for new button
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.WhiteSmoke;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -87,13 +88,12 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             {
                 Text = "Quick Actions",
                 Location = new Point(20, 90),
-                Size = new Size(550, 330), // Increased height
+                Size = new Size(550, 380), // ✅ Increased height for new row
                 Font = new Font("Arial", 10, FontStyle.Bold)
             };
             this.Controls.Add(grpQuickActions);
 
             // ===== ROW 1: Create Test & My Tests =====
-            // Create Test Button
             btnCreateTest = new Button
             {
                 Text = "➕ Create New Test",
@@ -106,7 +106,6 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             btnCreateTest.Click += BtnCreateTest_Click;
             grpQuickActions.Controls.Add(btnCreateTest);
 
-            // My Tests Button
             btnMyTests = new Button
             {
                 Text = "📋 View My Tests",
@@ -119,8 +118,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             btnMyTests.Click += BtnMyTests_Click;
             grpQuickActions.Controls.Add(btnMyTests);
 
-            // ===== ROW 2: Question Bank & Manage Questions (NEW!) =====
-            // Question Bank Button
+            // ===== ROW 2: Question Bank & Manage Questions =====
             btnQuestionBank = new Button
             {
                 Text = "❓ Question Bank",
@@ -133,25 +131,36 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             btnQuestionBank.Click += BtnQuestionBank_Click;
             grpQuickActions.Controls.Add(btnQuestionBank);
 
-            // ===== 🎯 NEW BUTTON: MANAGE QUESTIONS =====
             btnManageQuestions = new Button
             {
                 Text = "📝 Manage Questions",
                 Location = new Point(280, 110),
                 Size = new Size(220, 50),
                 Font = new Font("Arial", 10, FontStyle.Bold),
-                BackColor = Color.FromArgb(173, 216, 230), // Light Blue
+                BackColor = Color.FromArgb(173, 216, 230),
                 Cursor = Cursors.Hand
             };
             btnManageQuestions.Click += BtnManageQuestions_Click;
             grpQuickActions.Controls.Add(btnManageQuestions);
 
-            // ===== ROW 3: View Analysis (centered) =====
-            // View Analysis Button
+            // ===== ROW 3: Administer Test & Item Analysis =====
+            // ✅ NEW: ADMINISTER TEST BUTTON
+            btnAdministerTest = new Button
+            {
+                Text = "🎓 Administer Test",
+                Location = new Point(30, 180),
+                Size = new Size(220, 50),
+                Font = new Font("Arial", 10, FontStyle.Bold),
+                BackColor = Color.FromArgb(135, 206, 250), // Sky Blue
+                Cursor = Cursors.Hand
+            };
+            btnAdministerTest.Click += BtnAdministerTest_Click;
+            grpQuickActions.Controls.Add(btnAdministerTest);
+
             btnViewAnalysis = new Button
             {
                 Text = "📊 Item Analysis",
-                Location = new Point(155, 180), // Centered
+                Location = new Point(280, 180),
                 Size = new Size(220, 50),
                 Font = new Font("Arial", 10),
                 BackColor = Color.LightCoral,
@@ -163,9 +172,11 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             // Info Label
             lblInfo = new Label
             {
-                Text = "Click on any button above to get started!\n\n💡 New: Use 'Manage Questions' to edit or delete questions from your tests.",
+                Text = "Click on any button above to get started!\n\n" +
+                       "💡 Use 'Manage Questions' to edit or delete questions.\n" +
+                       "🎓 Use 'Administer Test' to create test sessions for students.",
                 Location = new Point(30, 245),
-                Size = new Size(490, 70),
+                Size = new Size(490, 90),
                 Font = new Font("Arial", 9),
                 ForeColor = Color.Gray
             };
@@ -175,7 +186,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             btnLogout = new Button
             {
                 Text = "Logout",
-                Location = new Point(470, 435),
+                Location = new Point(470, 485),
                 Size = new Size(100, 35),
                 Font = new Font("Arial", 10),
                 BackColor = Color.LightGray,
@@ -221,18 +232,11 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        /// <summary>
-        /// 🎯 NEW: MANAGE QUESTIONS BUTTON CLICK
-        /// Opens dialog to select test, then opens ManageQuestionsForm
-        /// </summary>
         private void BtnManageQuestions_Click(object sender, EventArgs e)
         {
             try
             {
-                // Get teacher ID
                 int teacherId = SessionManager.GetCurrentUserId();
-
-                // Load teacher's tests
                 var testRepo = new TestRepository();
                 var tests = testRepo.GetTestsByTeacher(teacherId);
 
@@ -243,7 +247,6 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
                     return;
                 }
 
-                // Create selection dialog
                 Form selectDialog = new Form
                 {
                     Text = "Select Test to Manage",
@@ -300,7 +303,6 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
                 };
                 selectDialog.Controls.Add(btnCancelDialog);
 
-                // Show dialog and open ManageQuestionsForm
                 if (selectDialog.ShowDialog() == DialogResult.OK && cmbTests.SelectedItem != null)
                 {
                     var selectedTest = (Test)cmbTests.SelectedItem;
@@ -311,6 +313,24 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             catch (Exception ex)
             {
                 MessageBox.Show($"Error opening manage questions: {ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// ✅ NEW: ADMINISTER TEST BUTTON CLICK
+        /// Opens TestAdministrationForm to create test sessions
+        /// </summary>
+        private void BtnAdministerTest_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                TestAdministrationForm form = new TestAdministrationForm();
+                form.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening test administration: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

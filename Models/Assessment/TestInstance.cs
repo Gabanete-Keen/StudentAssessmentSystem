@@ -1,58 +1,115 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-// Purpose: Represents a SPECIFIC administration of a test to a section
-// Why separate from Test? A test TEMPLATE can be used multiple times for different sections
-// Connected to: Test, Section, TestResult, TestInstanceRepository
+
 namespace StudentAssessmentSystem.Models.Assessment
 {
- /// Represents a specific administration of a test to a section
- /// EXAMPLE: "Midterm Exam" (Test) -> Given to "CS101-A Section" on "Oct 15" (TestInstance)
- /// SOLID: Single Responsibility - Handles test scheduling/administration
+    /// Represents a specific instance/session of a test
+    /// Teachers create test instances that students can take within a date range
     public class TestInstance
     {
+        // ===== PRIMARY KEY =====
         public int InstanceId { get; set; }
-        public int TestId { get; set; }
-        public int SectionId { get; set; }
-        public DateTime StartDateTime { get; set; }
-        public DateTime EndDateTime { get; set; }
-        public bool IsActive { get; set; }
 
-        // Navigation properties
+        // ===== FOREIGN KEYS =====
+        public int TestId { get; set; }
+        public int TeacherId { get; set; }
+
+        // ===== INSTANCE PROPERTIES =====
+        public string InstanceTitle { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public bool IsActive { get; set; }
+        public DateTime CreatedDate { get; set; }
+
+        // ===== NAVIGATION PROPERTIES =====
         public Test Test { get; set; }
 
+        /// Constructor - Sets default values
         public TestInstance()
         {
             IsActive = true;
+            CreatedDate = DateTime.Now;
         }
 
-       
-        /// Checks if the test is currently open for taking
-        
-        public bool IsCurrentlyActive()
+        /// Checks if the test instance is currently available for taking
+        public bool IsAvailable()
         {
             DateTime now = DateTime.Now;
-            return IsActive && now >= StartDateTime && now <= EndDateTime;
+            return IsActive && now >= StartDate && now <= EndDate;
+        }
+
+        /// Checks if the test instance is currently open
+        /// (Alias for IsAvailable for backward compatibility)
+        public bool IsCurrentlyActive()
+        {
+            return IsAvailable();
+        }
+
+        /// Checks if the test instance has expired
+        public bool IsExpired()
+        {
+            return DateTime.Now > EndDate;
         }
 
         
         /// Checks if the test period has ended
-        
+        /// (Alias for IsExpired for backward compatibility)
+      
         public bool HasEnded()
         {
-            return DateTime.Now > EndDateTime;
+            return IsExpired();
+        }
+
+     
+        /// Gets remaining time in minutes
+       
+        public int GetRemainingMinutes()
+        {
+            if (IsExpired())
+                return 0;
+
+            TimeSpan remaining = EndDate - DateTime.Now;
+            return (int)remaining.TotalMinutes;
         }
 
         
-        /// Gets remaining time in minutes
+        /// Validates test instance dates
         
-        public int GetRemainingMinutes()
+        public bool ValidateDates(out string errorMessage)
         {
-            if (!IsCurrentlyActive()) return 0;
-            TimeSpan remaining = EndDateTime - DateTime.Now;
-            return (int)remaining.TotalMinutes;
+            errorMessage = string.Empty;
+
+            if (EndDate <= StartDate)
+            {
+                errorMessage = "End date must be after start date.";
+                return false;
+            }
+
+            if (StartDate < DateTime.Now.AddMinutes(-5)) // Allow 5 minute buffer
+            {
+                errorMessage = "Start date cannot be in the past.";
+                return false;
+            }
+
+            return true;
+        }
+
+       
+        /// Gets status string for display
+       
+        public string GetStatusString()
+        {
+            if (!IsActive)
+                return "Inactive";
+
+            DateTime now = DateTime.Now;
+
+            if (now < StartDate)
+                return "Upcoming";
+
+            if (now > EndDate)
+                return "Expired";
+
+            return "Active";
         }
     }
 }

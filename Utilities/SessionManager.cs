@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using StudentAssessmentSystem.Models.Users;
 using StudentAssessmentSystem.Models.Enums;
-// Purpose: Keeps track of who is currently logged in
+
 namespace StudentAssessmentSystem.Utilities
 {
     /// Manages the current user session
@@ -16,11 +12,14 @@ namespace StudentAssessmentSystem.Utilities
         /// NULL if no one is logged in
         public static User CurrentUser { get; set; }
 
-     
         /// Check if someone is logged in
         public static bool IsLoggedIn => CurrentUser != null;
 
-        /// Get the current user's ID
+        ///  Get the current user's ID (as a property)
+        /// Returns 0 if no one is logged in
+        public static int CurrentUserId => CurrentUser?.UserId ?? 0;
+
+        /// Get the current user's ID (as a method)
         /// Returns 0 if no one is logged in
         public static int GetCurrentUserId()
         {
@@ -33,14 +32,12 @@ namespace StudentAssessmentSystem.Utilities
             return CurrentUser?.Role == UserRole.Admin;
         }
 
-     
         /// Check if current user is a Teacher
         public static bool IsTeacher()
         {
             return CurrentUser?.Role == UserRole.Teacher;
         }
 
-      
         /// Check if current user is a Student
         public static bool IsStudent()
         {
@@ -48,6 +45,7 @@ namespace StudentAssessmentSystem.Utilities
         }
 
         /// Logs out the current user
+        
         public static void Logout()
         {
             CurrentUser = null;
