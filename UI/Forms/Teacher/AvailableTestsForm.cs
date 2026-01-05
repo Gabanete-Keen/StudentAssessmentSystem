@@ -1,27 +1,29 @@
-﻿using MySql.Data.MySqlClient;
-using StudentAssessmentSystem.DataAccess;
-using StudentAssessmentSystem.DataAccess.Repositories;
-using StudentAssessmentSystem.UI.Forms.Student;
-using StudentAssessmentSystem.Utilities;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using StudentAssessmentSystem.DataAccess.Repositories;
+using StudentAssessmentSystem.Models.DTOs;
 
 namespace StudentAssessmentSystem.UI.Forms.Teacher
 {
+    /// <summary>
+    /// Form for students to view and select available test sessions
+    /// Shows only active test instances within their time window
+    /// </summary>
     public partial class AvailableTestsForm : Form
     {
-        private ListBox lstAvailableTests;
+        private TestRepository testRepository;
+        private Label lblTitle;
+        private Label lblInstructions;
+        private DataGridView dgvAvailableTests;
         private Button btnTakeTest;
+        private Button btnRefresh;
         private Button btnClose;
+        private Label lblStatus;
 
         public AvailableTestsForm()
         {
+            testRepository = new TestRepository();
             InitializeComponent();
             LoadAvailableTests();
         }
@@ -29,157 +31,279 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
         private void InitializeComponent()
         {
             this.Text = "Available Tests";
-            this.Size = new Size(600, 450);
+            this.Size = new Size(1000, 600);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.White;
+            this.FormBorderStyle = FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
 
-            Label lblTitle = new Label();
-            lblTitle.Text = "Available Tests";
-            lblTitle.Font = new Font("Arial", 14, FontStyle.Bold);
-            lblTitle.Location = new Point(20, 20);
-            lblTitle.Size = new Size(400, 30);
+            int yPos = 20;
+
+            // Title
+            lblTitle = new Label
+            {
+                Text = "📝 Available Test Sessions",
+                Font = new Font("Arial", 16, FontStyle.Bold),
+                Location = new Point(20, yPos),
+                Size = new Size(950, 30),
+                ForeColor = Color.DarkBlue
+            };
             this.Controls.Add(lblTitle);
+            yPos += 40;
 
-            lstAvailableTests = new ListBox();
-            lstAvailableTests.Location = new Point(20, 60);
-            lstAvailableTests.Size = new Size(540, 280);
-            lstAvailableTests.Font = new Font("Arial", 10);
-            this.Controls.Add(lstAvailableTests);
+            // Instructions
+            lblInstructions = new Label
+            {
+                Text = "Select a test session below to view details and start taking the test. " +
+                       "Only tests that are currently active and within their scheduled time window are shown.",
+                Location = new Point(20, yPos),
+                Size = new Size(950, 30),
+                Font = new Font("Arial", 9),
+                ForeColor = Color.Gray
+            };
+            this.Controls.Add(lblInstructions);
+            yPos += 40;
 
-            btnTakeTest = new Button();
-            btnTakeTest.Text = "Take Selected Test";
-            btnTakeTest.Location = new Point(20, 360);
-            btnTakeTest.Size = new Size(150, 35);
-            btnTakeTest.BackColor = Color.LightGreen;
-            btnTakeTest.Font = new Font("Arial", 10, FontStyle.Bold);
-            btnTakeTest.Cursor = Cursors.Hand;
+            // DataGridView for available tests
+            dgvAvailableTests = new DataGridView
+            {
+                Location = new Point(20, yPos),
+                Size = new Size(940, 350),
+                AllowUserToAddRows = false,
+                AllowUserToDeleteRows = false,
+                ReadOnly = true,
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                MultiSelect = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                BackgroundColor = Color.White,
+                RowHeadersVisible = false,
+                Font = new Font("Arial", 9)
+            };
+            // ❌ REMOVED: SetupDataGridColumns() - columns will be set in LoadAvailableTests()
+            this.Controls.Add(dgvAvailableTests);
+            yPos += 360;
+
+            // Status Label
+            lblStatus = new Label
+            {
+                Text = "Loading available tests...",
+                Location = new Point(20, yPos),
+                Size = new Size(600, 20),
+                Font = new Font("Arial", 9),
+                ForeColor = Color.DarkGreen
+            };
+            this.Controls.Add(lblStatus);
+
+            // Buttons
+            btnTakeTest = new Button
+            {
+                Text = "📝 View Test",
+                Location = new Point(650, yPos - 5),
+                Size = new Size(150, 35),
+                BackColor = Color.LightGreen,
+                Font = new Font("Arial", 10, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
             btnTakeTest.Click += BtnTakeTest_Click;
             this.Controls.Add(btnTakeTest);
 
-            btnClose = new Button();
-            btnClose.Text = "Close";
-            btnClose.Location = new Point(480, 360);
-            btnClose.Size = new Size(80, 35);
-            btnClose.BackColor = Color.LightGray;
+            btnRefresh = new Button
+            {
+                Text = "🔄 Refresh",
+                Location = new Point(810, yPos - 5),
+                Size = new Size(80, 35),
+                BackColor = Color.LightBlue,
+                Font = new Font("Arial", 9),
+                Cursor = Cursors.Hand
+            };
+            btnRefresh.Click += BtnRefresh_Click;
+            this.Controls.Add(btnRefresh);
+
+            btnClose = new Button
+            {
+                Text = "Close",
+                Location = new Point(900, yPos - 5),
+                Size = new Size(60, 35),
+                BackColor = Color.LightGray,
+                Cursor = Cursors.Hand
+            };
             btnClose.Click += (s, e) => this.Close();
             this.Controls.Add(btnClose);
         }
 
-       
-        /// Loads available tests for the student
         private void LoadAvailableTests()
         {
             try
             {
-                lstAvailableTests.Items.Clear();  // Use your actual ListBox name
+                lblStatus.Text = "Loading available tests...";
+                lblStatus.ForeColor = Color.DarkGreen;
+                dgvAvailableTests.Columns.Clear();
 
-                int studentId = SessionManager.GetCurrentUserId();
+                var availableTests = testRepository.GetAvailableTestInstancesForStudents();
 
-                // Get tests available to this student
-                var testRepository = new TestRepository();
-                var allTests = testRepository.GetAll();
-
-                foreach (var test in allTests)
+                if (availableTests == null || availableTests.Count == 0)
                 {
-                    // Create an anonymous object with TestId AND display text
-                    var displayItem = new
-                    {
-                        TestId = test.TestId,           // Include this!
-                        TestTitle = test.TestTitle,
-                        DisplayText = $"{test.TestTitle}"
-                    };
-
-                    lstAvailableTests.Items.Add(displayItem);
+                    lblStatus.Text = "No test sessions are currently available. Check back later!";
+                    lblStatus.ForeColor = Color.DarkOrange;
+                    return;
                 }
 
-                // Set the display member
-                lstAvailableTests.DisplayMember = "DisplayText";
+                // Configure DataGridView columns
+                dgvAvailableTests.AutoGenerateColumns = false;
+
+                //  Hidden InstanceId Column (PRIMARY KEY)
+                dgvAvailableTests.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "InstanceId",
+                    HeaderText = "InstanceId",
+                    Name = "InstanceId",
+                    Visible = false  // Hidden but accessible
+                });
+
+                //  Test Name Column (InstanceTitle from DTO)
+                dgvAvailableTests.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "InstanceTitle",
+                    HeaderText = "Test Name",
+                    Name = "InstanceTitle",
+                    Width = 200,
+                    ReadOnly = true
+                });
+
+                // Subject Column
+                dgvAvailableTests.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "SubjectName",
+                    HeaderText = "Subject",
+                    Name = "SubjectName",
+                    Width = 150,
+                    ReadOnly = true
+                });
+
+                //  Teacher Column
+                dgvAvailableTests.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "TeacherName",
+                    HeaderText = "Teacher",
+                    Name = "TeacherName",
+                    Width = 150,
+                    ReadOnly = true
+                });
+
+                //  Start Date Column
+                dgvAvailableTests.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "StartDate",
+                    HeaderText = "Start Date",
+                    Name = "StartDate",
+                    Width = 120,
+                    ReadOnly = true,
+                    DefaultCellStyle = new DataGridViewCellStyle { Format = "MMM dd, yyyy HH:mm" }
+                });
+
+                //  End Date Column
+                dgvAvailableTests.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "EndDate",
+                    HeaderText = "End Date",
+                    Name = "EndDate",
+                    Width = 120,
+                    ReadOnly = true,
+                    DefaultCellStyle = new DataGridViewCellStyle { Format = "MMM dd, yyyy HH:mm" }
+                });
+
+                //  Duration Column
+                dgvAvailableTests.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "DurationMinutes",
+                    HeaderText = "Duration (min)",
+                    Name = "DurationMinutes",
+                    Width = 100,
+                    ReadOnly = true
+                });
+
+                //  Total Points Column
+                dgvAvailableTests.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "TotalPoints",
+                    HeaderText = "Total Points",
+                    Name = "TotalPoints",
+                    Width = 100,
+                    ReadOnly = true
+                });
+
+                // Bind data to DataGridView
+                dgvAvailableTests.DataSource = availableTests;
+
+                // Update status
+                lblStatus.Text = $"Found {availableTests.Count} available test(s)";
+                lblStatus.ForeColor = Color.Green;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading tests:\n{ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                lblStatus.Text = "Error loading tests";
+                lblStatus.ForeColor = Color.Red;
+                MessageBox.Show($"ERROR: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
+                    "Error Details", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-
         private void BtnTakeTest_Click(object sender, EventArgs e)
         {
-            // Check if a test is selected
-            if (lstAvailableTests.SelectedItem == null)
+            if (dgvAvailableTests.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Please select a test first.", "Selection Required",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please select a test session to view.",
+                    "Selection Required", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             try
             {
-                // Get the selected test - cast to dynamic to access properties
-                dynamic selectedTest = lstAvailableTests.SelectedItem;
+                //  Get values using CORRECT column names
+                int instanceId = Convert.ToInt32(dgvAvailableTests.SelectedRows[0].Cells["InstanceId"].Value);
+                string instanceTitle = dgvAvailableTests.SelectedRows[0].Cells["InstanceTitle"].Value.ToString();
+                string subjectName = dgvAvailableTests.SelectedRows[0].Cells["SubjectName"].Value.ToString();
+                string teacherName = dgvAvailableTests.SelectedRows[0].Cells["TeacherName"].Value.ToString();
+                int duration = Convert.ToInt32(dgvAvailableTests.SelectedRows[0].Cells["DurationMinutes"].Value);
+                int totalPoints = Convert.ToInt32(dgvAvailableTests.SelectedRows[0].Cells["TotalPoints"].Value);
 
-                // Now you can access TestId
-                int testId = (int)selectedTest.TestId;  // ✅ Cast to int
+                // Show confirmation dialog with test details
+                DialogResult result = MessageBox.Show(
+                    $"You are about to start:\n\n" +
+                    $"Test: {instanceTitle}\n" +
+                    $"Subject: {subjectName}\n" +
+                    $"Teacher: {teacherName}\n" +
+                    $"Duration: {duration} minutes\n" +
+                    $"Total Points: {totalPoints}\n\n" +
+                    $"Are you ready to begin?",
+                    "Confirm Test Start",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
 
-                // Get the first active instance of this test
-                int instanceId = GetTestInstanceId(testId);
-
-                if (instanceId == 0)
+                if (result == DialogResult.Yes)
                 {
-                    MessageBox.Show("No active test instance found.\n\n" +
-                        "Please contact your teacher.", "Not Available",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
+                    // TODO: Open TakeTestForm with instanceId
+                    MessageBox.Show(
+                        $"Test Taking feature will be implemented next!\n\n" +
+                        $"Instance ID: {instanceId}\n" +
+                        $"Test: {instanceTitle}\n" +
+                        $"Subject: {subjectName}",
+                        "Coming Soon",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+
                 }
-
-                // Open the TakeTestForm
-                TakeTestForm takeTestForm = new TakeTestForm(testId, instanceId);
-                takeTestForm.ShowDialog();
-
-                // Refresh the list after test is completed
-                LoadAvailableTests();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error starting test:\n{ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error starting test: {ex.Message}\n\nStack: {ex.StackTrace}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        /// <summary>
-        /// Gets the active test instance ID for a test
-        /// </summary>
-        private int GetTestInstanceId(int testId)
+        private void BtnRefresh_Click(object sender, EventArgs e)
         {
-            try
-            {
-                using (var connection = DatabaseConnection.GetConnection())
-                {
-                    connection.Open();
-
-                    string query = @"
-                SELECT InstanceId 
-                FROM TestInstances 
-                WHERE TestId = @TestId 
-                  AND IsActive = 1
-                ORDER BY StartDateTime DESC 
-                LIMIT 1";
-
-                    using (var cmd = new MySqlCommand(query, connection))
-                    {
-                        cmd.Parameters.AddWithValue("@TestId", testId);
-                        var result = cmd.ExecuteScalar();
-                        return result != null ? Convert.ToInt32(result) : 0;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error getting test instance:\n{ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return 0;
-            }
+            LoadAvailableTests();
         }
     }
 }
-

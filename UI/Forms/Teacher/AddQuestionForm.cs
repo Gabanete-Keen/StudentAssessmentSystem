@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 using StudentAssessmentSystem.BusinessLogic.Managers;
-using StudentAssessmentSystem.DataAccess.Repositories; // ✅ ADDED
+using StudentAssessmentSystem.DataAccess.Repositories; 
 using StudentAssessmentSystem.Models.Assessment;
 using StudentAssessmentSystem.Models.Enums;
 
@@ -277,9 +277,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             }
         }
 
-        /// <summary>
-        /// ✅ FIXED: Saves question directly using QuestionRepository
-        /// </summary>
+        ///  Saves question directly using QuestionRepository
         private bool SaveQuestion()
         {
             // Validation

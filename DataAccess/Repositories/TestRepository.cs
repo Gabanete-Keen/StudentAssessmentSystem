@@ -1,20 +1,20 @@
 ﻿using MySql.Data.MySqlClient;
 using StudentAssessmentSystem.Models.Assessment;
+using StudentAssessmentSystem.Models.DTOs;
 using StudentAssessmentSystem.Models.Enums;
 using StudentAssessmentSystem.Models.Results;
+using StudentAssessmentSystem.DataAccess.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-// Purpose: Handles all MySQL database operations for Tests
-// Connected to: Test model, TestManager
 namespace StudentAssessmentSystem.DataAccess.Repositories
 {
-    // Repository for Test database operations
     public class TestRepository : IRepository<Test>
     {
+
         public int Add(Test entity)
         {
             try
@@ -61,70 +61,113 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                 throw new Exception($"Error adding test: {ex.Message}", ex);
             }
         }
-
-        
-        /// Gets test by ID    
+     
         public Test GetById(int id)
+        {
+            return GetTestById(id);
+        }
+
+        public Test GetTestById(int testId)
         {
             try
             {
-                using (var conn = DatabaseConnection.GetConnection())
+                using (MySqlConnection conn = DatabaseConnection.GetConnection())
                 {
                     conn.Open();
 
-                    string query = "SELECT * FROM Tests WHERE TestId = @TestId";
-                    using (var cmd = new MySqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@TestId", id);
+                    // ✅ JOIN with Subjects table to get SubjectName
+                    string query = @"SELECT t.*, s.SubjectName 
+                           FROM Tests t
+                           LEFT JOIN Subjects s ON t.SubjectId = s.SubjectId
+                           WHERE t.TestId = @TestId";
 
-                        using (var reader = cmd.ExecuteReader())
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@TestId", testId);
+
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
                         {
                             if (reader.Read())
                             {
-                                return MapReaderToTest(reader);
+                                Test test = new Test
+                                {
+                                    TestId = reader.GetInt32("TestId"),
+                                    SubjectId = reader.GetInt32("SubjectId"),
+                                    TeacherId = reader.GetInt32("TeacherId"),
+                                    TestTitle = reader.GetString("TestTitle"),
+                                    Description = reader.IsDBNull(reader.GetOrdinal("Description"))
+                                        ? null
+                                        : reader.GetString("Description"),
+                                    TestType = (TestType)reader.GetInt32("TestType"),
+                                    TotalPoints = reader.GetInt32("TotalPoints"),
+                                    PassingScore = reader.GetDecimal("PassingScore"),
+                                    DurationMinutes = reader.GetInt32("DurationMinutes"),
+                                    Instructions = reader.IsDBNull(reader.GetOrdinal("Instructions"))
+                                        ? null
+                                        : reader.GetString("Instructions"),
+                                    RandomizeQuestions = reader.GetBoolean("RandomizeQuestions"),
+                                    RandomizeChoices = reader.GetBoolean("RandomizeChoices"),
+                                    ShowCorrectAnswers = reader.GetBoolean("ShowCorrectAnswers"),
+                                    AllowReview = reader.GetBoolean("AllowReview"),
+                                    CreatedDate = reader.GetDateTime("CreatedDate"),
+                                    IsActive = reader.GetBoolean("IsActive"),
+
+                                    // ✅ Populate SubjectName from JOIN
+                                    SubjectName = reader.IsDBNull(reader.GetOrdinal("SubjectName"))
+                                        ? "N/A"
+                                        : reader.GetString("SubjectName")
+                                };
+
+                                // ✅ Load questions using QuestionRepository
+                                QuestionRepository questionRepo = new QuestionRepository();
+                                var mcQuestions = questionRepo.GetQuestionsByTest(testId);
+
+                                // Convert List<MultipleChoiceQuestion> to List<Question>
+                                test.Questions = new List<Question>();
+                                foreach (var mcq in mcQuestions)
+                                {
+                                    test.Questions.Add(mcq);
+                                }
+
+                                return test;
                             }
                         }
                     }
                 }
-                return null;
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error getting test: {ex.Message}", ex);
+                throw new Exception($"Error getting test by ID: {ex.Message}", ex);
             }
+
+            return null;
         }
+
+
+
 
         public Test GetTestByInstanceId(int testInstanceId)
         {
             try
             {
-                using (var conn = DatabaseConnection.GetConnection())
+                using (MySqlConnection conn = DatabaseConnection.GetConnection())
                 {
                     conn.Open();
 
-                    // First, get the TestId from TestInstances table
                     string query = @"SELECT t.* 
-                                   FROM Tests t
-                                   INNER JOIN TestInstances ti ON t.TestId = ti.TestId
-                                   WHERE ti.InstanceId = @InstanceId";
+                           FROM Tests t
+                           INNER JOIN TestInstances ti ON t.TestId = ti.TestId
+                           WHERE ti.InstanceId = @InstanceId";
 
-                    using (var cmd = new MySqlCommand(query, conn))
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@InstanceId", testInstanceId);
 
-                        using (var reader = cmd.ExecuteReader())
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
                         {
                             if (reader.Read())
                             {
                                 Test test = MapReaderToTest(reader);
-
-                                // Close reader before loading questions
-                                reader.Close();
-
-                                // Load questions for this test
-                                var questionRepo = new QuestionRepository();
-                                test.Questions = questionRepo.GetQuestionsByTest(test.TestId).Cast<Question>().ToList();
-
                                 return test;
                             }
                         }
@@ -138,79 +181,7 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
             }
         }
 
-     
-        /// Gets a test by its ID including all questions and choices
-        /// NEEDED FOR TEST-TAKING INTERFACE
-         public Test GetTestById(int testId)
-        {
-            try
-            {
-                using (var connection = DatabaseConnection.GetConnection())
-                {
-                    connection.Open();
 
-                    // Get the test details - using YOUR exact column names
-                    string testQuery = @"
-                SELECT TestId, SubjectId, TeacherId, TestTitle, Description, 
-                       TestType, TotalPoints, PassingScore, DurationMinutes, 
-                       Instructions, RandomizeQuestions, RandomizeChoices, 
-                       ShowCorrectAnswers, AllowReview, CreatedDate, IsActive
-                FROM Tests 
-                WHERE TestId = @TestId";
-
-                    Test test = null;
-
-                    using (var cmd = new MySqlCommand(testQuery, connection))
-                    {
-                        cmd.Parameters.AddWithValue("@TestId", testId);
-
-                        using (var reader = cmd.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                test = new Test
-                                {
-                                    TestId = reader.GetInt32("TestId"),
-                                    SubjectId = reader.GetInt32("SubjectId"),
-                                    TeacherId = reader.GetInt32("TeacherId"),
-                                    TestTitle = reader.GetString("TestTitle"),
-                                    Description = reader.IsDBNull(reader.GetOrdinal("Description"))
-                                        ? "" : reader.GetString("Description"),
-                                    TestType = (TestType)Enum.Parse(typeof(TestType), reader.GetString("TestType")),
-                                    TotalPoints = reader.GetInt32("TotalPoints"),
-                                    PassingScore = reader.GetDecimal("PassingScore"),
-                                    DurationMinutes = reader.GetInt32("DurationMinutes"),
-                                    Instructions = reader.IsDBNull(reader.GetOrdinal("Instructions"))
-                                        ? "" : reader.GetString("Instructions"),
-                                    RandomizeQuestions = reader.GetBoolean("RandomizeQuestions"),
-                                    RandomizeChoices = reader.GetBoolean("RandomizeChoices"),
-                                    ShowCorrectAnswers = reader.GetBoolean("ShowCorrectAnswers"),
-                                    AllowReview = reader.GetBoolean("AllowReview"),
-                                    CreatedDate = reader.GetDateTime("CreatedDate"),
-                                    IsActive = reader.GetBoolean("IsActive")
-                                };
-                            }
-                        }
-                    }
-
-                    if (test == null)
-                        return null;
-
-                    // Get all questions for this test with their choices
-                    var questionRepo = new QuestionRepository();
-                    test.Questions = questionRepo.GetQuestionsByTest(testId).Cast<Question>().ToList();
-
-                    return test;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error getting test by ID: {ex.Message}", ex);
-            }
-        }
-
-
-        /// Gets all active tests
         public List<Test> GetAll()
         {
             List<Test> tests = new List<Test>();
@@ -240,8 +211,6 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
             return tests;
         }
 
-        
-        /// Gets all tests created by a specific teacher  
         public List<Test> GetTestsByTeacher(int teacherId)
         {
             List<Test> tests = new List<Test>();
@@ -278,8 +247,6 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
             return tests;
         }
 
-        
-        /// Updates test information
         public bool Update(Test entity)
         {
             try
@@ -328,8 +295,6 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
             }
         }
 
-     
-        /// Soft delete - sets IsActive to false
         public bool Delete(int id)
         {
             try
@@ -353,8 +318,6 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
             }
         }
 
-        
-        /// Maps MySQL reader to Test object 
         private Test MapReaderToTest(MySqlDataReader reader)
         {
             return new Test
@@ -376,458 +339,270 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                 CreatedDate = reader.GetDateTime("CreatedDate"),
                 IsActive = reader.GetBoolean("IsActive")
             };
-      
         }
 
-    }
-
-    // ============================================
-    // QUESTION REPOSITORY
-    // ============================================
-
-   
-    /// Repository for Question database operations 
-    public class QuestionRepository
-    {
-       
-        /// Adds a new question with its choices     
-        public int AddQuestion(MultipleChoiceQuestion question)
+        // Gets available test instances for students
+        public List<AvailableTestInstanceDTO> GetAvailableTestInstancesForStudents()
         {
+            var instances = new List<AvailableTestInstanceDTO>();
+
             try
             {
-                using (var conn = DatabaseConnection.GetConnection())
+                using (MySqlConnection conn = DatabaseConnection.GetConnection())
                 {
                     conn.Open();
 
-                    // Insert question
-                    string questionQuery = @"INSERT INTO Questions 
-                                           (TestId, QuestionText, QuestionType, PointValue, 
-                                            DifficultyLevel, CognitiveLevel, Topic, Explanation, OrderNumber)
-                                           VALUES 
-                                           (@TestId, @QuestionText, @QuestionType, @PointValue,
-                                            @DifficultyLevel, @CognitiveLevel, @Topic, @Explanation, @OrderNumber);
-                                           SELECT LAST_INSERT_ID();";
+                    string query = @"
+                        SELECT 
+                            ti.InstanceId,
+                            ti.TestId,
+                            ti.TeacherId,
+                            ti.InstanceTitle,
+                            ti.StartDate,
+                            ti.EndDate,
+                            ti.IsActive,
+                            ti.CreatedDate,
+                            t.TestTitle,
+                            t.Description,
+                            t.DurationMinutes,
+                            t.TotalPoints,
+                            t.PassingScore,
+                            t.Instructions,
+                            t.RandomizeQuestions,
+                            t.RandomizeChoices,
+                            s.SubjectName,
+                            CONCAT(u.FirstName, ' ', u.LastName) AS TeacherName
+                        FROM TestInstances ti
+                        INNER JOIN Tests t ON ti.TestId = t.TestId
+                        INNER JOIN Subjects s ON t.SubjectId = s.SubjectId
+                        INNER JOIN Users u ON ti.TeacherId = u.UserId
+                        WHERE ti.IsActive = 1
+                          AND NOW() >= ti.StartDate
+                          AND NOW() <= ti.EndDate
+                        ORDER BY ti.StartDate ASC";
 
-                    int questionId;
-                    using (var cmd = new MySqlCommand(questionQuery, conn))
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
-                        cmd.Parameters.AddWithValue("@TestId", question.TestId);
-                        cmd.Parameters.AddWithValue("@QuestionText", question.QuestionText);
-                        cmd.Parameters.AddWithValue("@QuestionType", question.QuestionType);
-                        cmd.Parameters.AddWithValue("@PointValue", question.PointValue);
-                        cmd.Parameters.AddWithValue("@DifficultyLevel", question.DifficultyLevel.ToString());
-                        cmd.Parameters.AddWithValue("@CognitiveLevel", question.CognitiveLevel.ToString());
-                        cmd.Parameters.AddWithValue("@Topic", question.Topic ?? "");
-                        cmd.Parameters.AddWithValue("@Explanation", question.Explanation ?? "");
-                        cmd.Parameters.AddWithValue("@OrderNumber", question.OrderNumber);
-
-                        questionId = Convert.ToInt32(cmd.ExecuteScalar());
-                    }
-
-                    // Insert choices
-                    if (question.Choices != null && question.Choices.Count > 0)
-                    {
-                        string choiceQuery = @"INSERT INTO QuestionChoices 
-                                             (QuestionId, ChoiceText, IsCorrect, OrderNumber)
-                                             VALUES 
-                                             (@QuestionId, @ChoiceText, @IsCorrect, @OrderNumber)";
-
-                        foreach (var choice in question.Choices)
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
                         {
-                            using (var cmd = new MySqlCommand(choiceQuery, conn))
+                            while (reader.Read())
                             {
-                                cmd.Parameters.AddWithValue("@QuestionId", questionId);
-                                cmd.Parameters.AddWithValue("@ChoiceText", choice.ChoiceText);
-                                cmd.Parameters.AddWithValue("@IsCorrect", choice.IsCorrect);
-                                cmd.Parameters.AddWithValue("@OrderNumber", choice.OrderNumber);
-                                cmd.ExecuteNonQuery();
+                                var dto = new AvailableTestInstanceDTO
+                                {
+                                    InstanceId = reader.GetInt32("InstanceId"),
+                                    TestId = reader.GetInt32("TestId"),
+                                    TeacherId = reader.GetInt32("TeacherId"),
+                                    InstanceTitle = reader.GetString("InstanceTitle"),
+                                    StartDate = reader.GetDateTime("StartDate"),
+                                    EndDate = reader.GetDateTime("EndDate"),
+                                    IsActive = reader.GetBoolean("IsActive"),
+                                    CreatedDate = reader.GetDateTime("CreatedDate"),
+                                    TestTitle = reader.GetString("TestTitle"),
+                                    Description = reader.IsDBNull(reader.GetOrdinal("Description"))
+                                        ? "" : reader.GetString("Description"),
+                                    DurationMinutes = reader.GetInt32("DurationMinutes"),
+                                    TotalPoints = reader.GetInt32("TotalPoints"),
+                                    PassingScore = reader.GetDecimal("PassingScore"),
+                                    Instructions = reader.IsDBNull(reader.GetOrdinal("Instructions"))
+                                        ? "" : reader.GetString("Instructions"),
+                                    RandomizeQuestions = reader.GetBoolean("RandomizeQuestions"),
+                                    RandomizeChoices = reader.GetBoolean("RandomizeChoices"),
+                                    SubjectName = reader.GetString("SubjectName"),
+                                    TeacherName = reader.GetString("TeacherName")
+                                };
+
+                                instances.Add(dto);
                             }
                         }
                     }
-
-                    return questionId;
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error adding question: {ex.Message}", ex);
+                throw new Exception($"Error getting available test instances: {ex.Message}");
             }
+
+            return instances;
         }
 
-        /// Gets all questions for a specific test
-        public List<MultipleChoiceQuestion> GetQuestionsByTest(int testId)
+        //  Gets complete test session for student to take
+        public TestSessionDTO GetTestSessionForStudent(int instanceId)
         {
-            List<MultipleChoiceQuestion> questions = new List<MultipleChoiceQuestion>();
+            TestSessionDTO session = null;
 
             try
             {
-                using (var conn = DatabaseConnection.GetConnection())
+                using (MySqlConnection connection = DatabaseConnection.GetConnection())
                 {
-                    conn.Open();
+                    connection.Open();
 
-                    // Get questions
-                    string query = "SELECT * FROM Questions WHERE TestId = @TestId ORDER BY OrderNumber";
-                    using (var cmd = new MySqlCommand(query, conn))
+                    // Get test instance details
+                    string query = @"
+                SELECT 
+                    ti.InstanceId,
+                    ti.TestId,
+                    ti.InstanceTitle,
+                    t.TestTitle,
+                    s.SubjectName,
+                    CONCAT(u.FirstName, ' ', u.LastName) as TeacherName,
+                    ti.StartDate,
+                    ti.EndDate,
+                    t.DurationMinutes,
+                    t.TotalPoints,
+                    (SELECT COUNT(*) FROM TestQuestions WHERE TestId = t.TestId) as TotalQuestions
+                FROM TestInstances ti
+                INNER JOIN Tests t ON ti.TestId = t.TestId
+                INNER JOIN Subjects s ON t.SubjectId = s.SubjectId
+                INNER JOIN Users u ON ti.TeacherId = u.UserId
+                WHERE ti.InstanceId = @InstanceId
+                  AND ti.IsActive = 1
+                  AND NOW() >= ti.StartDate
+                  AND NOW() <= ti.EndDate";
+
+                    using (MySqlCommand command = new MySqlCommand(query, connection))
                     {
-                        cmd.Parameters.AddWithValue("@TestId", testId);
+                        command.Parameters.AddWithValue("@InstanceId", instanceId);
 
-                        using (var reader = cmd.ExecuteReader())
+                        using (MySqlDataReader reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                session = new TestSessionDTO
+                                {
+                                    InstanceId = reader.GetInt32("InstanceId"),
+                                    TestId = reader.GetInt32("TestId"),
+                                    InstanceTitle = reader.GetString("InstanceTitle"),
+                                    TestTitle = reader.GetString("TestTitle"),
+                                    SubjectName = reader.GetString("SubjectName"),
+                                    TeacherName = reader.GetString("TeacherName"),
+                                    StartDate = reader.GetDateTime("StartDate"),
+                                    EndDate = reader.GetDateTime("EndDate"),
+                                    DurationMinutes = reader.GetInt32("DurationMinutes"),
+                                    TotalPoints = reader.GetInt32("TotalPoints"),
+                                    TotalQuestions = reader.GetInt32("TotalQuestions")
+                                };
+                            }
+                        }
+                    }
+
+                    if (session == null)
+                    {
+                        throw new Exception("Test session not found or no longer available.");
+                    }
+
+                    // Get all questions for this test
+                    string questionQuery = @"
+                SELECT 
+                    q.QuestionId,
+                    q.QuestionText,
+                    q.Points,
+                    tq.OrderNumber,
+                    q.DifficultyLevel,
+                    q.CognitiveLevel
+                FROM TestQuestions tq
+                INNER JOIN Questions q ON tq.QuestionId = q.QuestionId
+                WHERE tq.TestId = @TestId
+                ORDER BY tq.OrderNumber";
+
+                    using (MySqlCommand command = new MySqlCommand(questionQuery, connection))
+                    {
+                        command.Parameters.AddWithValue("@TestId", session.TestId);
+
+                        using (MySqlDataReader reader = command.ExecuteReader())
                         {
                             while (reader.Read())
                             {
-                                var question = new MultipleChoiceQuestion
+                                TestQuestionDTO question = new TestQuestionDTO
                                 {
                                     QuestionId = reader.GetInt32("QuestionId"),
-                                    TestId = reader.IsDBNull(reader.GetOrdinal("TestId")) ? (int?)null : reader.GetInt32("TestId"),
                                     QuestionText = reader.GetString("QuestionText"),
-                                    QuestionType = reader.GetString("QuestionType"),
-                                    PointValue = reader.GetInt32("PointValue"),
-                                    DifficultyLevel = (DifficultyLevel)Enum.Parse(typeof(DifficultyLevel), reader.GetString("DifficultyLevel")),
-                                    CognitiveLevel = (CognitiveLevel)Enum.Parse(typeof(CognitiveLevel), reader.GetString("CognitiveLevel")),
-                                    Topic = reader.IsDBNull(reader.GetOrdinal("Topic")) ? "" : reader.GetString("Topic"),
-                                    Explanation = reader.IsDBNull(reader.GetOrdinal("Explanation")) ? "" : reader.GetString("Explanation"),
-                                    OrderNumber = reader.GetInt32("OrderNumber")
+                                    Points = reader.GetInt32("Points"),
+                                    OrderNumber = reader.GetInt32("OrderNumber"),
+                                    DifficultyLevel = reader.GetString("DifficultyLevel"),
+                                    CognitiveLevel = reader.GetString("CognitiveLevel")
                                 };
 
-                                questions.Add(question);
+                                session.Questions.Add(question);
                             }
                         }
                     }
 
                     // Get choices for each question
-                    foreach (var question in questions)
+                    foreach (TestQuestionDTO question in session.Questions)
                     {
-                        question.Choices = GetChoicesByQuestion(conn, question.QuestionId);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error getting questions: {ex.Message}", ex);
-            }
+                        string choiceQuery = @"
+                    SELECT 
+                        ChoiceId,
+                        ChoiceText,
+                        ChoiceOrder
+                    FROM QuestionChoices
+                    WHERE QuestionId = @QuestionId
+                    ORDER BY ChoiceOrder";
 
-            return questions;
-        }
-
-        /// Gets all choices for a specific question  
-        private List<QuestionChoice> GetChoicesByQuestion(MySqlConnection conn, int questionId)
-        {
-            List<QuestionChoice> choices = new List<QuestionChoice>();
-
-            string query = "SELECT * FROM QuestionChoices WHERE QuestionId = @QuestionId ORDER BY OrderNumber";
-            using (var cmd = new MySqlCommand(query, conn))
-            {
-                cmd.Parameters.AddWithValue("@QuestionId", questionId);
-
-                using (var reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        choices.Add(new QuestionChoice
+                        using (MySqlCommand command = new MySqlCommand(choiceQuery, connection))
                         {
-                            ChoiceId = reader.GetInt32("ChoiceId"),
-                            QuestionId = reader.GetInt32("QuestionId"),
-                            ChoiceText = reader.GetString("ChoiceText"),
-                            IsCorrect = reader.GetBoolean("IsCorrect"),
-                            OrderNumber = reader.GetInt32("OrderNumber")
-                        });
-                    }
-                }
-            }
+                            command.Parameters.AddWithValue("@QuestionId", question.QuestionId);
 
-            return choices;
-        }
-      
-        /// UPDATES an existing question and its choices
-        public bool UpdateQuestion(MultipleChoiceQuestion question, out string errorMessage)
-        {
-            errorMessage = string.Empty;
-
-            try
-            {
-                using (var conn = DatabaseConnection.GetConnection())
-                {
-                    conn.Open();
-
-                    // Start transaction to ensure data consistency
-                    using (var transaction = conn.BeginTransaction())
-                    {
-                        try
-                        {
-                            // Update question
-                            string questionQuery = @"
-                        UPDATE Questions 
-                        SET QuestionText = @QuestionText,
-                            PointValue = @PointValue,
-                            DifficultyLevel = @DifficultyLevel,
-                            CognitiveLevel = @CognitiveLevel,
-                            Topic = @Topic,
-                            Explanation = @Explanation,
-                            OrderNumber = @OrderNumber
-                        WHERE QuestionId = @QuestionId";
-
-                            using (var cmd = new MySqlCommand(questionQuery, conn, transaction))
+                            using (MySqlDataReader reader = command.ExecuteReader())
                             {
-                                cmd.Parameters.AddWithValue("@QuestionId", question.QuestionId);
-                                cmd.Parameters.AddWithValue("@QuestionText", question.QuestionText);
-                                cmd.Parameters.AddWithValue("@PointValue", question.PointValue);
-                                cmd.Parameters.AddWithValue("@DifficultyLevel", question.DifficultyLevel.ToString());
-                                cmd.Parameters.AddWithValue("@CognitiveLevel", question.CognitiveLevel.ToString());
-                                cmd.Parameters.AddWithValue("@Topic", question.Topic ?? (object)DBNull.Value);
-                                cmd.Parameters.AddWithValue("@Explanation", question.Explanation ?? (object)DBNull.Value);
-                                cmd.Parameters.AddWithValue("@OrderNumber", question.OrderNumber);
-
-                                cmd.ExecuteNonQuery();
-                            }
-
-                            // Delete old choices
-                            string deleteChoicesQuery = "DELETE FROM QuestionChoices WHERE QuestionId = @QuestionId";
-                            using (var cmd = new MySqlCommand(deleteChoicesQuery, conn, transaction))
-                            {
-                                cmd.Parameters.AddWithValue("@QuestionId", question.QuestionId);
-                                cmd.ExecuteNonQuery();
-                            }
-
-                            // Insert new choices
-                            if (question.Choices != null && question.Choices.Count > 0)
-                            {
-                                string insertChoiceQuery = @"
-                            INSERT INTO QuestionChoices (QuestionId, ChoiceText, IsCorrect, OrderNumber)
-                            VALUES (@QuestionId, @ChoiceText, @IsCorrect, @OrderNumber)";
-
-                                foreach (var choice in question.Choices)
+                                while (reader.Read())
                                 {
-                                    using (var cmd = new MySqlCommand(insertChoiceQuery, conn, transaction))
+                                    QuestionChoiceDTO choice = new QuestionChoiceDTO
                                     {
-                                        cmd.Parameters.AddWithValue("@QuestionId", question.QuestionId);
-                                        cmd.Parameters.AddWithValue("@ChoiceText", choice.ChoiceText);
-                                        cmd.Parameters.AddWithValue("@IsCorrect", choice.IsCorrect);
-                                        cmd.Parameters.AddWithValue("@OrderNumber", choice.OrderNumber);
-                                        cmd.ExecuteNonQuery();
-                                    }
+                                        ChoiceId = reader.GetInt32("ChoiceId"),
+                                        ChoiceText = reader.GetString("ChoiceText"),
+                                        ChoiceOrder = reader.GetInt32("ChoiceOrder")
+                                    };
+
+                                    question.Choices.Add(choice);
                                 }
                             }
-
-                            // Commit transaction
-                            transaction.Commit();
-                            return true;
-                        }
-                        catch (Exception ex)
-                        {
-                            transaction.Rollback();
-                            errorMessage = $"Transaction failed: {ex.Message}";
-                            return false;
                         }
                     }
+
+                    connection.Close();
                 }
+
+                return session;
             }
             catch (Exception ex)
             {
-                errorMessage = $"Error updating question: {ex.Message}";
-                return false;
+                throw new Exception($"Error loading test session: {ex.Message}", ex);
             }
         }
-
-       
-        /// DELETES a question and its choices (soft delete - can be changed to hard delete)
-        public bool DeleteQuestion(int questionId, out string errorMessage)
+        /// Gets all active test instances (tests that are currently available)
+        public List<TestInstance> GetActiveTestInstances()
         {
-            errorMessage = string.Empty;
+            List<TestInstance> instances = new List<TestInstance>();
 
             try
             {
-                using (var conn = DatabaseConnection.GetConnection())
+                using (MySqlConnection conn = DatabaseConnection.GetConnection())
                 {
                     conn.Open();
 
-                    using (var transaction = conn.BeginTransaction())
+                    string query = @"SELECT * FROM TestInstances 
+                           WHERE IsActive = 1 
+                           AND StartDate <= @Now 
+                           AND EndDate >= @Now
+                           ORDER BY StartDate DESC";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
-                        try
-                        {
-                            // First, check if question has been answered by students
-                            string checkQuery = "SELECT COUNT(*) FROM StudentAnswers WHERE QuestionId = @QuestionId";
-                            using (var cmd = new MySqlCommand(checkQuery, conn, transaction))
-                            {
-                                cmd.Parameters.AddWithValue("@QuestionId", questionId);
-                                int answerCount = Convert.ToInt32(cmd.ExecuteScalar());
+                        cmd.Parameters.AddWithValue("@Now", DateTime.Now);
 
-                                if (answerCount > 0)
-                                {
-                                    errorMessage = "Cannot delete question - students have already answered it.";
-                                    return false;
-                                }
-                            }
-
-                            // Delete choices first (foreign key constraint)
-                            string deleteChoicesQuery = "DELETE FROM QuestionChoices WHERE QuestionId = @QuestionId";
-                            using (var cmd = new MySqlCommand(deleteChoicesQuery, conn, transaction))
-                            {
-                                cmd.Parameters.AddWithValue("@QuestionId", questionId);
-                                cmd.ExecuteNonQuery();
-                            }
-
-                            // Delete question
-                            string deleteQuestionQuery = "DELETE FROM Questions WHERE QuestionId = @QuestionId";
-                            using (var cmd = new MySqlCommand(deleteQuestionQuery, conn, transaction))
-                            {
-                                cmd.Parameters.AddWithValue("@QuestionId", questionId);
-                                int rowsAffected = cmd.ExecuteNonQuery();
-
-                                if (rowsAffected == 0)
-                                {
-                                    errorMessage = "Question not found.";
-                                    return false;
-                                }
-                            }
-
-                            transaction.Commit();
-                            return true;
-                        }
-                        catch (Exception ex)
-                        {
-                            transaction.Rollback();
-                            errorMessage = $"Transaction failed: {ex.Message}";
-                            return false;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                errorMessage = $"Error deleting question: {ex.Message}";
-                return false;
-            }
-        }
-
-      
-        /// GETS a single question with its choices by QuestionId
-        public MultipleChoiceQuestion GetQuestionById(int questionId)
-        {
-            try
-            {
-                using (var conn = DatabaseConnection.GetConnection())
-                {
-                    conn.Open();
-
-                    string query = "SELECT * FROM Questions WHERE QuestionId = @QuestionId";
-                    using (var cmd = new MySqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@QuestionId", questionId);
-
-                        using (var reader = cmd.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                var question = new MultipleChoiceQuestion
-                                {
-                                    QuestionId = reader.GetInt32("QuestionId"),
-                                    TestId = reader.IsDBNull(reader.GetOrdinal("TestId")) ? (int?)null : reader.GetInt32("TestId"),
-                                    QuestionText = reader.GetString("QuestionText"),
-                                    QuestionType = reader.GetString("QuestionType"),
-                                    PointValue = reader.GetInt32("PointValue"),
-                                    DifficultyLevel = (DifficultyLevel)Enum.Parse(typeof(DifficultyLevel), reader.GetString("DifficultyLevel")),
-                                    CognitiveLevel = (CognitiveLevel)Enum.Parse(typeof(CognitiveLevel), reader.GetString("CognitiveLevel")),
-                                    Topic = reader.IsDBNull(reader.GetOrdinal("Topic")) ? null : reader.GetString("Topic"),
-                                    Explanation = reader.IsDBNull(reader.GetOrdinal("Explanation")) ? null : reader.GetString("Explanation"),
-                                    OrderNumber = reader.GetInt32("OrderNumber")
-                                };
-
-                                reader.Close();
-
-                                // Load choices
-                                question.Choices = GetChoicesByQuestion(conn, questionId);
-
-                                return question;
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error getting question: {ex.Message}", ex);
-            }
-
-            return null;
-        }
-
-    }
-
-    // ============================================
-    // TEST RESULT REPOSITORY
-    // ============================================
-
-    /// Repository for TestResult database operations - MySQL version
-
-    public class TestResultRepository
-    {
-  
-        /// Adds a new test result
-        public int Add(TestResult result)
-        {
-            try
-            {
-                using (var conn = DatabaseConnection.GetConnection())
-                {
-                    conn.Open();
-
-                    string query = @"INSERT INTO TestResults 
-                                   (InstanceId, StudentId, StartTime, SubmitTime, RawScore, 
-                                    TotalPoints, Percentage, LetterGrade, Passed, IsCompleted)
-                                   VALUES 
-                                   (@InstanceId, @StudentId, @StartTime, @SubmitTime, @RawScore,
-                                    @TotalPoints, @Percentage, @LetterGrade, @Passed, @IsCompleted);
-                                   SELECT LAST_INSERT_ID();";
-
-                    using (var cmd = new MySqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@InstanceId", result.InstanceId);
-                        cmd.Parameters.AddWithValue("@StudentId", result.StudentId);
-                        cmd.Parameters.AddWithValue("@StartTime", result.StartTime);
-                        cmd.Parameters.AddWithValue("@SubmitTime", result.SubmitTime.HasValue ? (object)result.SubmitTime.Value : DBNull.Value);
-                        cmd.Parameters.AddWithValue("@RawScore", result.RawScore);
-                        cmd.Parameters.AddWithValue("@TotalPoints", result.TotalPoints);
-                        cmd.Parameters.AddWithValue("@Percentage", result.Percentage);
-                        cmd.Parameters.AddWithValue("@LetterGrade", result.LetterGrade ?? "");
-                        cmd.Parameters.AddWithValue("@Passed", result.Passed);
-                        cmd.Parameters.AddWithValue("@IsCompleted", result.IsCompleted);
-
-                        int resultId = Convert.ToInt32(cmd.ExecuteScalar());
-                        return resultId;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error adding test result: {ex.Message}", ex);
-            }
-        }
-
-        
-        /// Gets test results by student
-        public List<TestResult> GetResultsByStudent(int studentId)
-        {
-            List<TestResult> results = new List<TestResult>();
-
-            try
-            {
-                using (var conn = DatabaseConnection.GetConnection())
-                {
-                    conn.Open();
-
-                    string query = @"SELECT * FROM TestResults 
-                                   WHERE StudentId = @StudentId 
-                                   ORDER BY StartTime DESC";
-
-                    using (var cmd = new MySqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@StudentId", studentId);
-
-                        using (var reader = cmd.ExecuteReader())
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
                             {
-                                results.Add(MapReaderToTestResult(reader));
+                                instances.Add(new TestInstance
+                                {
+                                    InstanceId = reader.GetInt32("InstanceId"),
+                                    TestId = reader.GetInt32("TestId"),
+                                    StartDate = reader.GetDateTime("StartDate"),
+                                    EndDate = reader.GetDateTime("EndDate"),
+                                    IsActive = reader.GetBoolean("IsActive")
+                                });
                             }
                         }
                     }
@@ -835,107 +610,10 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error getting test results: {ex.Message}", ex);
+                throw new Exception($"Error getting active test instances: {ex.Message}", ex);
             }
 
-            return results;
-        }
-
-        public List<TestResult> GetResultsByInstance(int testInstanceId)
-        {
-            List<TestResult> results = new List<TestResult>();
-
-            try
-            {
-                using (var conn = DatabaseConnection.GetConnection())
-                {
-                    conn.Open();
-
-                    string query = @"SELECT * FROM TestResults 
-                                   WHERE InstanceId = @InstanceId 
-                                   AND IsCompleted = TRUE
-                                   ORDER BY RawScore DESC";
-
-                    using (var cmd = new MySqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@InstanceId", testInstanceId);
-
-                        using (var reader = cmd.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                results.Add(MapReaderToTestResult(reader));
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error getting results by instance: {ex.Message}", ex);
-            }
-
-            return results;
-        }
-
-        /// Maps reader to TestResult
-        private TestResult MapReaderToTestResult(MySqlDataReader reader)
-        {
-            return new TestResult
-            {
-                ResultId = reader.GetInt32("ResultId"),
-                InstanceId = reader.GetInt32("InstanceId"),
-                StudentId = reader.GetInt32("StudentId"),
-                StartTime = reader.GetDateTime("StartTime"),
-                SubmitTime = reader.IsDBNull(reader.GetOrdinal("SubmitTime")) ? (DateTime?)null : reader.GetDateTime("SubmitTime"),
-                RawScore = reader.GetInt32("RawScore"),
-                TotalPoints = reader.GetInt32("TotalPoints"),
-                Percentage = reader.GetDecimal("Percentage"),
-                LetterGrade = reader.IsDBNull(reader.GetOrdinal("LetterGrade")) ? "" : reader.GetString("LetterGrade"),
-                Passed = reader.GetBoolean("Passed"),
-                IsCompleted = reader.GetBoolean("IsCompleted")
-            };
-        }  /// Adds a new test to MySQL database
-
-
-        /// Updates an existing test result
-        /// NEEDED when student submits test
-        public bool Update(TestResult result)
-        {
-            try
-            {
-                using (var conn = DatabaseConnection.GetConnection())
-                {
-                    conn.Open();
-
-                    string query = @"UPDATE TestResults SET 
-                           SubmitTime = @SubmitTime,
-                           RawScore = @RawScore,
-                           Percentage = @Percentage,
-                           LetterGrade = @LetterGrade,
-                           Passed = @Passed,
-                           IsCompleted = @IsCompleted
-                           WHERE ResultId = @ResultId";
-
-                    using (var cmd = new MySqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@ResultId", result.ResultId);
-                        cmd.Parameters.AddWithValue("@SubmitTime", result.SubmitTime.HasValue ? (object)result.SubmitTime.Value : DBNull.Value);
-                        cmd.Parameters.AddWithValue("@RawScore", result.RawScore);
-                        cmd.Parameters.AddWithValue("@Percentage", result.Percentage);
-                        cmd.Parameters.AddWithValue("@LetterGrade", result.LetterGrade ?? "");
-                        cmd.Parameters.AddWithValue("@Passed", result.Passed);
-                        cmd.Parameters.AddWithValue("@IsCompleted", result.IsCompleted);
-
-                        int rowsAffected = cmd.ExecuteNonQuery();
-                        return rowsAffected > 0;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error updating test result: {ex.Message}", ex);
-            }
+            return instances;
         }
     }
 }

@@ -76,21 +76,14 @@ namespace StudentAssessmentSystem.BusinessLogic.Managers
                     throw new Exception($"Error getting questions: {ex.Message}", ex);
                 }
             }
-       
+
         /// UPDATES an existing question
         public bool UpdateQuestion(MultipleChoiceQuestion question, out string errorMessage)
         {
             errorMessage = string.Empty;
-
             try
             {
-                // Validation
-                if (question.QuestionId <= 0)
-                {
-                    errorMessage = "Invalid question ID.";
-                    return false;
-                }
-
+                // VALIDATION
                 if (string.IsNullOrWhiteSpace(question.QuestionText))
                 {
                     errorMessage = "Question text is required.";
@@ -103,14 +96,21 @@ namespace StudentAssessmentSystem.BusinessLogic.Managers
                     return false;
                 }
 
-                if (!question.Choices.Any(c => c.IsCorrect))
+                if (!question.Choices.Exists(c => c.IsCorrect))
                 {
                     errorMessage = "Question must have at least one correct answer.";
                     return false;
                 }
 
-                // Update in repository
-                return _questionRepository.UpdateQuestion(question, out errorMessage);
+                //  Pass questionId as first parameter
+                bool result = _questionRepository.UpdateQuestion(question.QuestionId, question);
+
+                if (!result)
+                {
+                    errorMessage = "Failed to update question.";
+                }
+
+                return result;
             }
             catch (Exception ex)
             {
@@ -119,7 +119,8 @@ namespace StudentAssessmentSystem.BusinessLogic.Managers
             }
         }
 
-       
+
+
         /// DELETES a question
         public bool DeleteQuestion(int questionId, out string errorMessage)
         {
@@ -133,7 +134,7 @@ namespace StudentAssessmentSystem.BusinessLogic.Managers
                     return false;
                 }
 
-                return _questionRepository.DeleteQuestion(questionId, out errorMessage);
+                return _questionRepository.DeleteQuestion(questionId);
             }
             catch (Exception ex)
             {

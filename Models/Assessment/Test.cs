@@ -4,19 +4,35 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 // Purpose: Represents a test/assessment created by a teacher
 // SOLID: Single Responsibility - Only handles test properties
 // Connected to: Question, TestInstance, TestRepository, TestManager
+
 namespace StudentAssessmentSystem.Models.Assessment
 {
+    /// <>
     /// Represents a test/assessment
-  
     public class Test
     {
+        // Primary Key
         public int TestId { get; set; }
+
+        // Foreign Keys
         public int SubjectId { get; set; }
         public int TeacherId { get; set; }
+
+        // Test Information
         public string TestTitle { get; set; }
+
+        //  Alias property for compatibility
+        /// Alias for TestTitle - used by UI forms
+        public string Title
+        {
+            get => TestTitle;
+            set => TestTitle = value;
+        }
+
         public string Description { get; set; }
         public TestType TestType { get; set; }
 
@@ -36,14 +52,19 @@ namespace StudentAssessmentSystem.Models.Assessment
         public bool ShowCorrectAnswers { get; set; }
         public bool AllowReview { get; set; }
 
-
         // Metadata
         public DateTime CreatedDate { get; set; }
         public bool IsActive { get; set; }
 
+        // : Navigation property for Subject name
+        /// Subject name - populated by repository joins
+        /// Not stored in database, used for display purposes
+        public string SubjectName { get; set; }
+
         // Navigation property - Questions in this test
         public List<Question> Questions { get; set; }
 
+        /// Constructor - initializes default values
         public Test()
         {
             CreatedDate = DateTime.Now;
@@ -52,11 +73,10 @@ namespace StudentAssessmentSystem.Models.Assessment
             AllowReview = true;
             PassingScore = 60.00m; // Default 60%
         }
+
         /// Gets the total number of questions in the test
-        
         public int QuestionCount => Questions?.Count ?? 0;
 
-       
         /// Calculates total points from all questions
         /// DRY: Centralized calculation
         public void CalculateTotalPoints()
@@ -70,6 +90,7 @@ namespace StudentAssessmentSystem.Models.Assessment
                 }
             }
         }
+
         /// Validates test data is complete
         public bool IsValid()
         {
@@ -81,5 +102,3 @@ namespace StudentAssessmentSystem.Models.Assessment
         }
     }
 }
-    
-

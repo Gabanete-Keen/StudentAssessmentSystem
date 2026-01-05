@@ -1,7 +1,8 @@
-﻿using System;
+﻿using StudentAssessmentSystem.UI.Forms.Teacher;
+using StudentAssessmentSystem.Utilities;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
-using StudentAssessmentSystem.Utilities;
 
 namespace StudentAssessmentSystem.UI.Forms.Student
 {
@@ -118,15 +119,29 @@ namespace StudentAssessmentSystem.UI.Forms.Student
         {
             try
             {
-                var form = new Teacher.AvailableTestsForm();
-                form.ShowDialog();
+                // Student's version of Available Tests
+                AvailableTestsForm availableTestsForm = new AvailableTestsForm();
+                this.Hide(); // Hide dashboard while taking test
+
+                DialogResult result = availableTestsForm.ShowDialog();
+
+                this.Show(); // Show dashboard again after closing
+
+                // Refresh dashboard if needed
+                if (result == DialogResult.OK)
+                {
+                    LoadStudentData();
+                }
             }
             catch (Exception ex)
             {
+                this.Show(); // Make sure dashboard shows even if error occurs
                 MessageBox.Show($"Error opening available tests:\n{ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+
 
         private void BtnMyResults_Click(object sender, EventArgs e)
         {
