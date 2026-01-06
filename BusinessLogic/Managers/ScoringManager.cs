@@ -20,60 +20,55 @@ namespace StudentAssessmentSystem.BusinessLogic.Managers
                 _resultRepository = new TestResultRepository();
             }
 
-            /// Scores a completed test
-            /// Calculates raw score, percentage, and letter grade
-            public void ScoreTest(TestResult testResult, List<Question> questions)
+        /// Scores a completed test
+        /// Calculates raw score, percentage, and letter grade
+        public void ScoreTest(TestResult testResult, List<Question> questions)
+        {
+            try
             {
-                try
+                int totalPointsEarned = 0;
+
+                foreach (var answer in testResult.Answers)
                 {
-                    int totalPointsEarned = 0;
-
-                    // Score each answer
-                    foreach (var answer in testResult.Answers)
+                    Question question = questions.Find(q => q.QuestionId == answer.QuestionId);
+                    if (question != null)
                     {
-                        // Find the corresponding question
-                        Question question = questions.Find(q => q.QuestionId == answer.QuestionId);
+                        //  ALWAYS set IsCorrect FIRST
+                        answer.IsCorrect = question.CheckAnswer(answer.SelectedChoiceId);
 
-                        if (question != null)
+                        //  THEN award points
+                        if (answer.IsCorrect == true)
                         {
-                            // Check if answer is correct
-                            answer.IsCorrect = question.CheckAnswer(answer.SelectedChoiceId);
-
-                            // Award points if correct
-                            if (answer.IsCorrect)
-                            {
-                                answer.PointsEarned = question.PointValue;
-                                totalPointsEarned += question.PointValue;
-                            }
-                            else
-                            {
-                                answer.PointsEarned = 0;
-                            }
+                            answer.PointsEarned = question.PointValue;
+                            totalPointsEarned += question.PointValue;
+                        }
+                        else
+                        {
+                            answer.PointsEarned = 0;
                         }
                     }
-
-                    // Calculate score
-                    testResult.RawScore = totalPointsEarned;
-                    testResult.CalculatePercentage();
-                    testResult.AssignLetterGrade();
-
-                    // Determine if passed (based on passing score from test)
-                    // This would need the Test object to get PassingScore
-                    // For now, we'll use 60% as default
-                    testResult.Passed = testResult.Percentage >= 60;
-
-                    testResult.IsCompleted = true;
                 }
-                catch (Exception ex)
-                {
-                    throw new Exception($"Error scoring test: {ex.Message}", ex);
-                }
+
+                // Calculate totals
+                testResult.RawScore = totalPointsEarned;
+                testResult.CalculatePercentage();
+                testResult.AssignLetterGrade();
+
+                // Passed logic
+                testResult.Passed = testResult.Percentage >= 60;  // Use actual test.PassingScore later
+                testResult.IsCompleted = true;
             }
+            catch (Exception ex)
+            {
+                throw new Exception("Error scoring test: " + ex.Message, ex);
+            }
+        }
 
-     
-            /// Calculates letter grade based on percentage
-            /// Can be customized based on school's grading scale
-            public string CalculateLetterGrade(decimal percentage)
+
+
+        /// Calculates letter grade based on percentage
+        /// Can be customized based on school's grading scale
+        public string CalculateLetterGrade(decimal percentage)
             {
                 if (percentage >= 90) return "A";
                 if (percentage >= 80) return "B";

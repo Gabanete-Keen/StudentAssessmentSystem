@@ -24,11 +24,10 @@ namespace StudentAssessmentSystem.Models.Results
         // Scoring
         public bool IsCorrect { get; set; }
         public int PointsEarned { get; set; }
-        public int TimeSpentSeconds { get; set; }
-
-        
+        public int? TimeSpentSeconds { get; set; }
+        public int InstanceId { get; set; }
         /// Validates the answer data
-        
+
         public bool IsValid()
         {
             return ResultId > 0 && QuestionId > 0;

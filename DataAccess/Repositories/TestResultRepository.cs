@@ -133,9 +133,7 @@
 
 
         // Get result by student and instance
-        /// <summary>
         /// Gets test result by student and instance
-        /// </summary>
         public TestResult GetResultByStudentAndInstance(int studentId, int instanceId)
         {
             try
@@ -282,5 +280,37 @@
 
             return results;
         }
+
+        /// Gets a test result by its ID
+        public TestResult GetResultById(int resultId)
+        {
+            try
+            {
+                using (MySqlConnection conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+                    string query = "SELECT * FROM TestResults WHERE ResultId = @ResultId";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@ResultId", resultId);
+
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                return MapReaderToTestResult(reader);
+                            }
+                        }
+                    }
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error getting test result: {ex.Message}", ex);
+            }
+        }
+
     }
 }

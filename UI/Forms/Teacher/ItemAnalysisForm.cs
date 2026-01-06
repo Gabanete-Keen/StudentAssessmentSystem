@@ -1,4 +1,5 @@
-﻿using StudentAssessmentSystem.BusinessLogic.Analysis;
+﻿using MySql.Data.MySqlClient;
+using StudentAssessmentSystem.BusinessLogic.Analysis;
 using StudentAssessmentSystem.DataAccess;
 using StudentAssessmentSystem.DataAccess.Repositories;
 using StudentAssessmentSystem.Models.Assessment;
@@ -7,6 +8,7 @@ using StudentAssessmentSystem.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace StudentAssessmentSystem.UI.Forms.Teacher
@@ -201,93 +203,55 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
 
             try
             {
-                btnAnalyze.Enabled = false;
-                btnAnalyze.Text = "Analyzing...";
-                this.Cursor = Cursors.WaitCursor;
-
-                // Get selected test ID
                 dynamic selectedItem = cmbTests.SelectedItem;
                 int testId = selectedItem.TestId;
 
-                //  dummy test instance
                 int testInstanceId = CreateDemoTestInstance(testId);
-
                 if (testInstanceId == 0)
                 {
-                    MessageBox.Show("No test administrations found for this test.\n\n" +
-                        "Note: Tests must be administered to students before analysis can be performed.",
+                    MessageBox.Show("No test administrations found for this test.",
                         "No Data", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
-                }
-
-                // Perform analysis
-                PerformAnalysis(testInstanceId);
+                }       
             }
             catch (Exception ex)
             {
-                if (ex.Message.Contains("Not enough data"))
-                {
-                    MessageBox.Show(
-                        "Not enough student responses for statistical analysis.\n\n" +
-                        "Item analysis requires at least 30 students to have completed the test.\n\n" +
-                        "This is a statistical requirement for valid difficulty and discrimination indices.",
-                        "Insufficient Data",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning
-                    );
-                }
-                else
-                {
-                    MessageBox.Show($"Error performing analysis:\n{ex.Message}", "Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            finally
-            {
-                btnAnalyze.Enabled = true;
-                btnAnalyze.Text = "Analyze Test";
-                this.Cursor = Cursors.Default;
+                MessageBox.Show($"Error performing analysis:\n{ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-       
+
         /// Gets the first available test instance for the given test
         /// this should allow teachers to select which administration to analyze
         private int CreateDemoTestInstance(int testId)
         {
             try
             {
-                using (var connection = DatabaseConnection.GetConnection())
+                using (MySqlConnection connection = DatabaseConnection.GetConnection())  // ✅ FIXED
                 {
                     connection.Open();
-                    string query = @"
-                SELECT InstanceId 
-                FROM TestInstances 
-                WHERE TestId = @TestId 
-                  AND IsActive = 1
-                ORDER BY StartDateTime DESC 
-                LIMIT 1";
-
-                    using (var cmd = new MySql.Data.MySqlClient.MySqlCommand(query, connection))
+                    string query = @"SELECT InstanceId FROM TestInstances 
+                            WHERE TestId = @TestId AND IsActive = 1 
+                            ORDER BY CreatedDate DESC LIMIT 1";  // ✅ Schema correct
+                    using (MySqlCommand cmd = new MySqlCommand(query, connection))  // ✅ FIXED
                     {
                         cmd.Parameters.AddWithValue("@TestId", testId);
                         var result = cmd.ExecuteScalar();
-
                         if (result != null)
-                        {
                             return Convert.ToInt32(result);
-                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error retrieving test instance:\n{ex.Message}", "Database Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error retrieving test instance: " + ex.Message, "Database Error",
+                               MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            return 0; // No instance found
+            return 0;  // No instance found
         }
+
+
 
 
         private void PerformAnalysis(int testInstanceId)

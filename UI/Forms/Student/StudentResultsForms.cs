@@ -1,7 +1,6 @@
 ﻿using MySql.Data.MySqlClient;
 using StudentAssessmentSystem.DataAccess;
 using StudentAssessmentSystem.DataAccess.Repositories;
-using StudentAssessmentSystem.Models.Results;
 using StudentAssessmentSystem.Utilities;
 using System;
 using System.Collections.Generic;
@@ -160,6 +159,7 @@ namespace StudentAssessmentSystem.UI.Forms.Student
                                     displayData.Add(new
                                     {
                                         ResultId = result.ResultId,
+                                        InstanceId = result.InstanceId,   // ✅ store instanceId too
                                         TestTitle = reader.GetString("TestTitle"),
                                         Subject = reader.GetString("SubjectName"),
                                         DateTaken = result.StartTime.ToString("MMM dd, yyyy"),
@@ -178,69 +178,61 @@ namespace StudentAssessmentSystem.UI.Forms.Student
                 // Bind to DataGridView
                 dgvResults.DataSource = displayData;
 
-                // ===== FORCE BINDING TO COMPLETE =====
-                Application.DoEvents(); // Let UI thread process
+                Application.DoEvents();
                 dgvResults.Update();
                 dgvResults.Refresh();
 
-                // ===== SAFE COLUMN CUSTOMIZATION (using try-catch for each column) =====
                 try
                 {
-                    // Hide ResultId column (first column)
-                    if (dgvResults.Columns.Count > 0)
-                        dgvResults.Columns[0].Visible = false;
+                    // Hide technical ID columns
+                    if (dgvResults.Columns["ResultId"] != null)
+                        dgvResults.Columns["ResultId"].Visible = false;
 
-                    // Set ALL columns to auto-resize first
+                    if (dgvResults.Columns["InstanceId"] != null)
+                        dgvResults.Columns["InstanceId"].Visible = false;
+
                     dgvResults.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
 
-                    // Then customize specific columns IF they exist
-                    for (int i = 0; i < dgvResults.Columns.Count; i++)
+                    foreach (DataGridViewColumn col in dgvResults.Columns)
                     {
-                        string colName = dgvResults.Columns[i].Name;
-
-                        switch (colName)
+                        switch (col.Name)
                         {
-                            case "ResultId":
-                                dgvResults.Columns[i].Visible = false;
-                                break;
                             case "TestTitle":
-                                dgvResults.Columns[i].HeaderText = "Test Name";
-                                dgvResults.Columns[i].Width = 250;
+                                col.HeaderText = "Test Name";
+                                col.Width = 250;
                                 break;
                             case "Subject":
-                                dgvResults.Columns[i].HeaderText = "Subject";
-                                dgvResults.Columns[i].Width = 150;
+                                col.HeaderText = "Subject";
+                                col.Width = 150;
                                 break;
                             case "DateTaken":
-                                dgvResults.Columns[i].HeaderText = "Date Taken";
-                                dgvResults.Columns[i].Width = 120;
+                                col.HeaderText = "Date Taken";
+                                col.Width = 120;
                                 break;
                             case "Score":
-                                dgvResults.Columns[i].HeaderText = "Score";
-                                dgvResults.Columns[i].Width = 100;
+                                col.HeaderText = "Score";
+                                col.Width = 100;
                                 break;
                             case "Percentage":
-                                dgvResults.Columns[i].HeaderText = "Percentage";
-                                dgvResults.Columns[i].Width = 100;
+                                col.HeaderText = "Percentage";
+                                col.Width = 100;
                                 break;
                             case "Grade":
-                                dgvResults.Columns[i].HeaderText = "Grade";
-                                dgvResults.Columns[i].Width = 80;
+                                col.HeaderText = "Grade";
+                                col.Width = 80;
                                 break;
                             case "Status":
-                                dgvResults.Columns[i].HeaderText = "Status";
-                                dgvResults.Columns[i].Width = 120;
+                                col.HeaderText = "Status";
+                                col.Width = 120;
                                 break;
                         }
                     }
 
-                    // Color code the Status column
                     dgvResults.CellFormatting += DgvResults_CellFormatting;
                 }
                 catch (Exception colEx)
                 {
                     System.Diagnostics.Debug.WriteLine($"Column error: {colEx.Message}");
-                    // Don't crash - just log it
                 }
             }
             catch (Exception ex)
@@ -289,19 +281,21 @@ namespace StudentAssessmentSystem.UI.Forms.Student
 
             try
             {
-                int resultId = (int)dgvResults.SelectedRows[0].Cells["ResultId"].Value;
+                DataGridViewRow row = dgvResults.SelectedRows[0];
 
-                MessageBox.Show(
-                    $"Detailed results view for Result ID: {resultId}\n\n" +
-                    "This will show:\n" +
-                    "• Question-by-question breakdown\n" +
-                    "• Correct/incorrect answers\n" +
-                    "• Explanations\n" +
-                    "• Time spent per question",
-                    "Feature Coming Soon",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
+                int resultId = (int)row.Cells["ResultId"].Value;
+                int instanceId = (int)row.Cells["InstanceId"].Value;   // ✅ get instanceId directly
+                string testTitle = row.Cells["TestTitle"].Value.ToString();
+
+                // (Optional sanity check)
+                // MessageBox.Show($"Debug:\nResultId={resultId}\nInstanceId={instanceId}");
+
+                StudentPerformanceDetailForm detailForm = new StudentPerformanceDetailForm(
+                    _currentStudentId,
+                    instanceId,
+                    testTitle
                 );
+                detailForm.ShowDialog();
             }
             catch (Exception ex)
             {

@@ -144,9 +144,6 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
             return null;
         }
 
-
-
-
         public Test GetTestByInstanceId(int testInstanceId)
         {
             try
@@ -156,9 +153,9 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                     conn.Open();
 
                     string query = @"SELECT t.* 
-                           FROM Tests t
-                           INNER JOIN TestInstances ti ON t.TestId = ti.TestId
-                           WHERE ti.InstanceId = @InstanceId";
+                   FROM Tests t
+                   INNER JOIN TestInstances ti ON t.TestId = ti.TestId
+                   WHERE ti.InstanceId = @InstanceId";
 
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
@@ -169,6 +166,13 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                             if (reader.Read())
                             {
                                 Test test = MapReaderToTest(reader);
+
+                                // ✅ FIXED: Explicit CAST to List<Question>
+                                QuestionRepository questionRepo = new QuestionRepository();
+                                test.Questions = questionRepo.GetQuestionsByTest(test.TestId)
+                                    .Cast<Question>()  // ← THIS FIXES COMPILER ERROR
+                                    .ToList();
+
                                 return test;
                             }
                         }
@@ -181,6 +185,7 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                 throw new Exception($"Error getting test by instance: {ex.Message}", ex);
             }
         }
+
 
 
         public List<Test> GetAll()

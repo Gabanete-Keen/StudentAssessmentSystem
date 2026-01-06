@@ -17,10 +17,11 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
         private Button btnMyTests;
         private Button btnQuestionBank;
         private Button btnManageQuestions;
-        private Button btnAdministerTest; // ✅ NEW: Test Administration Button
+        private Button btnAdministerTest;
         private Button btnViewAnalysis;
         private Button btnLogout;
         private Label lblInfo;
+        private Button btnTestPerformance;
 
         public TeacherDashboardForm()
         {
@@ -57,7 +58,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
         private void InitializeComponent()
         {
             this.Text = "Teacher Dashboard";
-            this.Size = new Size(600, 550); // ✅ Increased height for new button
+            this.Size = new Size(600, 600); // ✅ Increased
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.WhiteSmoke;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -88,7 +89,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             {
                 Text = "Quick Actions",
                 Location = new Point(20, 90),
-                Size = new Size(550, 380), // ✅ Increased height for new row
+                Size = new Size(550, 420), // ✅ Adjusted
                 Font = new Font("Arial", 10, FontStyle.Bold)
             };
             this.Controls.Add(grpQuickActions);
@@ -144,14 +145,13 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             grpQuickActions.Controls.Add(btnManageQuestions);
 
             // ===== ROW 3: Administer Test & Item Analysis =====
-            // ✅ NEW: ADMINISTER TEST BUTTON
             btnAdministerTest = new Button
             {
                 Text = "🎓 Administer Test",
                 Location = new Point(30, 180),
                 Size = new Size(220, 50),
                 Font = new Font("Arial", 10, FontStyle.Bold),
-                BackColor = Color.FromArgb(135, 206, 250), // Sky Blue
+                BackColor = Color.FromArgb(135, 206, 250),
                 Cursor = Cursors.Hand
             };
             btnAdministerTest.Click += BtnAdministerTest_Click;
@@ -174,19 +174,32 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             {
                 Text = "Click on any button above to get started!\n\n" +
                        "💡 Use 'Manage Questions' to edit or delete questions.\n" +
-                       "🎓 Use 'Administer Test' to create test sessions for students.",
+                       "🎓 Use 'Administer Test' to create test sessions.",
                 Location = new Point(30, 245),
-                Size = new Size(490, 90),
+                Size = new Size(490, 70), // ✅ REDUCED
                 Font = new Font("Arial", 9),
                 ForeColor = Color.Gray
             };
             grpQuickActions.Controls.Add(lblInfo);
 
+            // ===== ROW 4: TEST PERFORMANCE ANALYZER (TEMPORARY) =====
+            btnTestPerformance = new Button
+            {
+                Text = "🧪 Test Performance",
+                Location = new Point(30, 330), // ✅ FIXED POSITION
+                Size = new Size(220, 50),
+                Font = new Font("Arial", 10, FontStyle.Bold),
+                BackColor = Color.Orange,
+                Cursor = Cursors.Hand
+            };
+            btnTestPerformance.Click += BtnTestPerformanceClick;
+            grpQuickActions.Controls.Add(btnTestPerformance);
+
             // Logout Button
             btnLogout = new Button
             {
                 Text = "Logout",
-                Location = new Point(470, 485),
+                Location = new Point(470, 530), // ✅ Adjusted for taller form
                 Size = new Size(100, 35),
                 Font = new Font("Arial", 10),
                 BackColor = Color.LightGray,
@@ -196,8 +209,8 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             this.Controls.Add(btnLogout);
         }
 
-        // ===== EVENT HANDLERS =====
 
+        // ===== EVENT HANDLERS =====
         private void BtnCreateTest_Click(object sender, EventArgs e)
         {
             try
@@ -317,10 +330,10 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             }
         }
 
-        /// <summary>
-        /// ✅ NEW: ADMINISTER TEST BUTTON CLICK
+        
+        ///  ADMINISTER TEST BUTTON CLICK
         /// Opens TestAdministrationForm to create test sessions
-        /// </summary>
+     
         private void BtnAdministerTest_Click(object sender, EventArgs e)
         {
             try
@@ -371,6 +384,19 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             {
                 MessageBox.Show($"Error during logout: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private void BtnTestPerformanceClick(object sender, EventArgs e)
+        {
+            try
+            {
+                PerformanceAnalyzerTestForm testForm = new PerformanceAnalyzerTestForm();
+                testForm.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

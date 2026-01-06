@@ -82,22 +82,23 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                     conn.Open();
 
                     string query = @"
-                        INSERT INTO StudentAnswers 
-                        (ResultId, QuestionId, SelectedChoiceId, AnswerText, IsCorrect, PointsEarned, TimeSpentSeconds)
-                        VALUES 
-                        (@ResultId, @QuestionId, @SelectedChoiceId, @AnswerText, @IsCorrect, @PointsEarned, @TimeSpentSeconds);
-                        SELECT LAST_INSERT_ID();";
+                INSERT INTO StudentAnswers 
+                (InstanceId, ResultId, QuestionId, SelectedChoiceId, AnswerText, IsCorrect, PointsEarned, TimeSpentSeconds)
+                VALUES 
+                (@InstanceId, @ResultId, @QuestionId, @SelectedChoiceId, @AnswerText, @IsCorrect, @PointsEarned, @TimeSpentSeconds);
+                SELECT LAST_INSERT_ID();";
 
                     using (var cmd = new MySqlCommand(query, conn))
                     {
+                        cmd.Parameters.AddWithValue("@InstanceId", answer.InstanceId);  // NEW: Critical FK
                         cmd.Parameters.AddWithValue("@ResultId", answer.ResultId);
                         cmd.Parameters.AddWithValue("@QuestionId", answer.QuestionId);
                         cmd.Parameters.AddWithValue("@SelectedChoiceId",
                             answer.SelectedChoiceId.HasValue ? (object)answer.SelectedChoiceId.Value : DBNull.Value);
-                        cmd.Parameters.AddWithValue("@AnswerText", answer.AnswerText ?? "");
+                        cmd.Parameters.AddWithValue("@AnswerText", answer.AnswerText ?? (object)DBNull.Value);
                         cmd.Parameters.AddWithValue("@IsCorrect", answer.IsCorrect);
                         cmd.Parameters.AddWithValue("@PointsEarned", answer.PointsEarned);
-                        cmd.Parameters.AddWithValue("@TimeSpentSeconds", answer.TimeSpentSeconds);
+                        cmd.Parameters.AddWithValue("@TimeSpentSeconds", answer.TimeSpentSeconds ?? (object)0);
 
                         return Convert.ToInt32(cmd.ExecuteScalar());
                     }
@@ -108,6 +109,9 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                 throw new Exception($"Error adding answer: {ex.Message}", ex);
             }
         }
+
+
+
 
         /// <summary>
         /// ✅ NEW METHOD: Gets all answers for a specific test result

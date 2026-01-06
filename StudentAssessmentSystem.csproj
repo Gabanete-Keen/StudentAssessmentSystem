@@ -103,6 +103,7 @@
   <ItemGroup>
     <Compile Include="BusinessLogic\Analysis\DifficultyCalculator.cs" />
     <Compile Include="BusinessLogic\Analysis\ItemAnalyzer.cs" />
+    <Compile Include="BusinessLogic\Analysis\PerformanceAnalyzer.cs" />
     <Compile Include="BusinessLogic\Analysis\StatisticsCalculator.cs" />
     <Compile Include="BusinessLogic\Managers\QuestionBankManager.cs" />
     <Compile Include="BusinessLogic\Managers\ScoringManager.cs" />
@@ -138,6 +139,7 @@
     <Compile Include="Models\Enums\UserRole.cs" />
     <Compile Include="Models\Results\QuestionStatistics.cs" />
     <Compile Include="Models\Results\StudentAnswer.cs" />
+    <Compile Include="Models\Results\StudentPerformanceReport.cs" />
     <Compile Include="Models\Results\TestResult.cs" />
     <Compile Include="Models\Users\Admin.cs" />
     <Compile Include="Models\Users\Student.cs" />
@@ -155,6 +157,9 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="UI\Forms\Student\StudentDashboardForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\Forms\Student\StudentPerformanceDetailForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="UI\Forms\Student\StudentResultsForms.cs">
@@ -182,6 +187,9 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="UI\Forms\Teacher\MyTestsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\Forms\Teacher\PerformanceAnalyzerTestForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="UI\Forms\Teacher\TeacherDashboardForm.cs">
