@@ -5,15 +5,20 @@ using System.Text;
 using System.Threading.Tasks;
 using StudentAssessmentSystem.Models.Results;
 using MySql.Data.MySqlClient;
-// Purpose: Gets student answers from MySQL database
-// Connected to: StudentAnswer model, ItemAnalyzer  
+
 namespace StudentAssessmentSystem.DataAccess.Repositories
 {
-    // Repository for StudentAnswer database operations
+    /// <summary>
+    /// Repository for StudentAnswer database operations
+    /// Purpose: Gets student answers from MySQL database
+    /// Connected to: StudentAnswer model, ItemAnalyzer
+    /// </summary>
     public class StudentAnswerRepository
     {
-        // Gets all answers for a specific question in a test instance
-        // Used for item analysis
+        /// <summary>
+        /// Gets all answers for a specific question in a test instance
+        /// Used for item analysis
+        /// </summary>
         public List<StudentAnswer> GetAnswersForQuestion(int questionId, int testInstanceId)
         {
             List<StudentAnswer> answers = new List<StudentAnswer>();
@@ -102,6 +107,58 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
             {
                 throw new Exception($"Error adding answer: {ex.Message}", ex);
             }
+        }
+
+        /// <summary>
+        /// ✅ NEW METHOD: Gets all answers for a specific test result
+        /// Used when submitting test to calculate total score
+        /// </summary>
+        public List<StudentAnswer> GetAnswersByResult(int resultId)
+        {
+            List<StudentAnswer> answers = new List<StudentAnswer>();
+
+            try
+            {
+                using (MySqlConnection conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+
+                    string query = @"SELECT * FROM StudentAnswers WHERE ResultId = @ResultId";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@ResultId", resultId);
+
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                answers.Add(new StudentAnswer
+                                {
+                                    AnswerId = reader.GetInt32("AnswerId"),
+                                    ResultId = reader.GetInt32("ResultId"),
+                                    QuestionId = reader.GetInt32("QuestionId"),
+                                    SelectedChoiceId = reader.IsDBNull(reader.GetOrdinal("SelectedChoiceId"))
+                                        ? (int?)null
+                                        : reader.GetInt32("SelectedChoiceId"),
+                                    AnswerText = reader.IsDBNull(reader.GetOrdinal("AnswerText"))
+                                        ? null
+                                        : reader.GetString("AnswerText"),
+                                    IsCorrect = reader.GetBoolean("IsCorrect"),
+                                    PointsEarned = reader.GetInt32("PointsEarned"),
+                                    TimeSpentSeconds = reader.GetInt32("TimeSpentSeconds")
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error getting student answers: {ex.Message}", ex);
+            }
+
+            return answers;
         }
     }
 }

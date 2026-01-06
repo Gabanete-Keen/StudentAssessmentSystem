@@ -330,6 +330,9 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                             }
                         }
                     }
+
+                    // ✅ CRITICAL: Load enrolled sections
+                    student.EnrolledSectionIds = GetEnrolledSectionIds(user.UserId);
                 }
             }
             catch (Exception ex)
@@ -339,9 +342,50 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
             }
         }
 
-       
+        
+        /// Gets all section IDs that a student is enrolled in
+        /// Critical for filtering available tests by student's sections
+        private List<int> GetEnrolledSectionIds(int studentId)
+        {
+            List<int> sectionIds = new List<int>();
+
+            try
+            {
+                using (MySqlConnection conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+
+                    string query = @"SELECT SectionId 
+                           FROM sectionenrollments 
+                           WHERE StudentId = @StudentId";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@StudentId", studentId);
+
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                sectionIds.Add(reader.GetInt32("SectionId"));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log but don't crash - return empty list
+                System.Diagnostics.Debug.WriteLine($"Error loading enrolled sections: {ex.Message}");
+            }
+
+            return sectionIds;
+        }
+
+
+
         /// Updates last login date
-       
+
         public bool UpdateLastLogin(int userId)
         {
             try

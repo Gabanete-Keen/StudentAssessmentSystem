@@ -107,6 +107,7 @@
     <Compile Include="BusinessLogic\Managers\QuestionBankManager.cs" />
     <Compile Include="BusinessLogic\Managers\ScoringManager.cs" />
     <Compile Include="BusinessLogic\Managers\TestManager.cs" />
+    <Compile Include="BusinessLogic\Managers\TestTakingManager.cs" />
     <Compile Include="BusinessLogic\Managers\UserManager.cs" />
     <Compile Include="BusinessLogic\Services\AuthenticationService.cs" />
     <Compile Include="BusinessLogic\Services\ReportService.cs" />
@@ -115,6 +116,7 @@
     <Compile Include="DataAccess\DatabaseConnection.cs" />
     <Compile Include="DataAccess\Repositories\IRepository.cs" />
     <Compile Include="DataAccess\Repositories\QuestionRepository.cs" />
+    <Compile Include="DataAccess\Repositories\SectionRepository.cs" />
     <Compile Include="DataAccess\Repositories\StudentAnswerRepository.cs" />
     <Compile Include="DataAccess\Repositories\TestInstanceRepository.cs" />
     <Compile Include="DataAccess\Repositories\TestRepository.cs" />
@@ -158,7 +160,7 @@
     <Compile Include="UI\Forms\Student\StudentResultsForms.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="UI\Forms\Student\TakeTestForm.cs">
+    <Compile Include="UI\Forms\Student\TakingTestForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="UI\Forms\Teacher\AddQuestionForm.cs">

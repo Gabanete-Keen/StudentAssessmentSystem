@@ -23,6 +23,7 @@ namespace StudentAssessmentSystem.Models.Academic
         public Subject Subject { get; set; }
         public List<int> EnrolledStudentIds { get; set; }
 
+        public bool IsActive { get; set; }
         public Section()
         {
             EnrolledStudentIds = new List<int>();

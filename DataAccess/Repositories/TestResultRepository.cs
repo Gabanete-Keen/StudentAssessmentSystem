@@ -82,6 +82,55 @@
 
                 return results;
             }
+        public TestResult GetById(int resultId)
+        {
+            try
+            {
+                using (MySqlConnection conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+
+                    string query = @"SELECT * FROM TestResults WHERE ResultId = @ResultId";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@ResultId", resultId);
+
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                return new TestResult
+                                {
+                                    ResultId = reader.GetInt32("ResultId"),
+                                    InstanceId = reader.GetInt32("InstanceId"),
+                                    StudentId = reader.GetInt32("StudentId"),
+                                    StartTime = reader.GetDateTime("StartTime"),
+                                    SubmitTime = reader.IsDBNull(reader.GetOrdinal("SubmitTime"))
+                                        ? (DateTime?)null
+                                        : reader.GetDateTime("SubmitTime"),
+                                    RawScore = reader.GetInt32("RawScore"),
+                                    TotalPoints = reader.GetInt32("TotalPoints"),
+                                    Percentage = reader.GetDecimal("Percentage"), 
+                                    LetterGrade = reader.IsDBNull(reader.GetOrdinal("LetterGrade"))
+                                        ? null
+                                        : reader.GetString("LetterGrade"),
+                                    Passed = reader.GetBoolean("Passed"),
+                                    IsCompleted = reader.GetBoolean("IsCompleted")
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error getting test result by ID: {ex.Message}", ex);
+            }
+
+            return null;
+        }
+
 
         // Get result by student and instance
         /// <summary>
@@ -140,46 +189,45 @@
 
         // Update method - for updating existing result
         public bool Update(TestResult result)
+        {
+            try
             {
-                try
+                using (MySqlConnection conn = DatabaseConnection.GetConnection())
                 {
-                    using (MySqlConnection conn = DatabaseConnection.GetConnection())
+                    conn.Open();
+
+                    string query = @"UPDATE TestResults SET 
+                            SubmitTime = @SubmitTime,
+                            RawScore = @RawScore,
+                            Percentage = @Percentage,
+                            LetterGrade = @LetterGrade,
+                            Passed = @Passed,
+                            IsCompleted = @IsCompleted
+                            WHERE ResultId = @ResultId";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
-                        conn.Open();
+                        cmd.Parameters.AddWithValue("@ResultId", result.ResultId);
+                        cmd.Parameters.AddWithValue("@SubmitTime", result.SubmitTime);
+                        cmd.Parameters.AddWithValue("@RawScore", result.RawScore);
+                        cmd.Parameters.AddWithValue("@Percentage", result.Percentage);
+                        cmd.Parameters.AddWithValue("@LetterGrade", result.LetterGrade ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Passed", result.Passed);
+                        cmd.Parameters.AddWithValue("@IsCompleted", result.IsCompleted);
 
-                        string query = @"UPDATE TestResults SET 
-                                       SubmitTime = @SubmitTime,
-                                       RawScore = @RawScore,
-                                       TotalPoints = @TotalPoints,
-                                       Percentage = @Percentage,
-                                       LetterGrade = @LetterGrade,
-                                       Passed = @Passed,
-                                       IsCompleted = @IsCompleted
-                                       WHERE ResultId = @ResultId";
-
-                        using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                        {
-                            cmd.Parameters.AddWithValue("@ResultId", result.ResultId);
-                            cmd.Parameters.AddWithValue("@SubmitTime", result.SubmitTime.HasValue ? (object)result.SubmitTime.Value : DBNull.Value);
-                            cmd.Parameters.AddWithValue("@RawScore", result.RawScore);
-                            cmd.Parameters.AddWithValue("@TotalPoints", result.TotalPoints);
-                            cmd.Parameters.AddWithValue("@Percentage", result.Percentage);
-                            cmd.Parameters.AddWithValue("@LetterGrade", result.LetterGrade ?? "");
-                            cmd.Parameters.AddWithValue("@Passed", result.Passed);
-                            cmd.Parameters.AddWithValue("@IsCompleted", result.IsCompleted);
-
-                            int rowsAffected = cmd.ExecuteNonQuery();
-                            return rowsAffected > 0;
-                        }
+                        int rowsAffected = cmd.ExecuteNonQuery();
+                        return rowsAffected > 0;
                     }
                 }
-                catch (Exception ex)
-                {
-                    throw new Exception($"Error updating test result: {ex.Message}", ex);
-                }
             }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error updating test result: {ex.Message}", ex);
+            }
+        }
 
-            private TestResult MapReaderToTestResult(MySqlDataReader reader)
+
+        private TestResult MapReaderToTestResult(MySqlDataReader reader)
             {
                 return new TestResult
                 {

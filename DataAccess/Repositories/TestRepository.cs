@@ -98,10 +98,11 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                                     Description = reader.IsDBNull(reader.GetOrdinal("Description"))
                                         ? null
                                         : reader.GetString("Description"),
-                                    TestType = (TestType)reader.GetInt32("TestType"),
+                                    TestType = (TestType)Enum.Parse(typeof(TestType), reader.GetString("TestType")),  
                                     TotalPoints = reader.GetInt32("TotalPoints"),
                                     PassingScore = reader.GetDecimal("PassingScore"),
-                                    DurationMinutes = reader.GetInt32("DurationMinutes"),
+                                    DurationMinutes = reader.IsDBNull(reader.GetOrdinal("DurationMinutes"))
+                                    ? 0 : reader.GetInt32("DurationMinutes"),
                                     Instructions = reader.IsDBNull(reader.GetOrdinal("Instructions"))
                                         ? null
                                         : reader.GetString("Instructions"),
@@ -615,5 +616,87 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
 
             return instances;
         }
+        /// <summary>
+        /// Gets active test instances filtered by student's enrolled sections
+        /// SOLID: Single Responsibility - Handles data retrieval with section filtering
+        /// </summary>
+        public List<TestInstance> GetActiveTestInstancesByStudentSections(
+            int studentId,
+            List<int> enrolledSectionIds)
+        {
+            List<TestInstance> instances = new List<TestInstance>();
+
+            try
+            {
+                // Validation
+                if (enrolledSectionIds == null || enrolledSectionIds.Count == 0)
+                {
+                    return instances; // Return empty list
+                }
+
+                using (MySqlConnection conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+
+                    // Build parameterized section filter
+                    string sectionPlaceholders = string.Join(",",
+                        enrolledSectionIds.Select((_, i) => $"@Section{i}"));
+
+                    string query = $@"
+                SELECT DISTINCT ti.*
+                FROM testinstances ti
+                INNER JOIN testinstancesections tis ON ti.InstanceId = tis.InstanceId
+                WHERE ti.IsActive = 1 
+                  AND NOW() >= ti.StartDate 
+                  AND NOW() <= ti.EndDate
+                  AND tis.SectionId IN ({sectionPlaceholders})
+                  AND ti.InstanceId NOT IN (
+                      -- Exclude tests student already completed
+                      SELECT DISTINCT InstanceId 
+                      FROM testresults 
+                      WHERE StudentId = @StudentId
+                        AND IsCompleted = 1
+                  )
+                ORDER BY ti.StartDate ASC";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    {
+                        // Add student ID parameter
+                        cmd.Parameters.AddWithValue("@StudentId", studentId);
+
+                        // Add section parameters
+                        for (int i = 0; i < enrolledSectionIds.Count; i++)
+                        {
+                            cmd.Parameters.AddWithValue($"@Section{i}", enrolledSectionIds[i]);
+                        }
+
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                instances.Add(new TestInstance
+                                {
+                                    InstanceId = reader.GetInt32("InstanceId"),
+                                    TestId = reader.GetInt32("TestId"),
+                                    TeacherId = reader.GetInt32("TeacherId"),
+                                    InstanceTitle = reader.GetString("InstanceTitle"),
+                                    StartDate = reader.GetDateTime("StartDate"),
+                                    EndDate = reader.GetDateTime("EndDate"),
+                                    IsActive = reader.GetBoolean("IsActive"),
+                                    CreatedDate = reader.GetDateTime("CreatedDate")
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error getting test instances by sections: {ex.Message}", ex);
+            }
+
+            return instances;
+        }
+
     }
 }

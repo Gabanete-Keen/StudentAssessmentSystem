@@ -1,30 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Windows.Forms;
+﻿using MySql.Data.MySqlClient;
 using StudentAssessmentSystem.DataAccess.Repositories;
 using StudentAssessmentSystem.Models.Assessment;
-using StudentAssessmentSystem.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
+using StudentModel = StudentAssessmentSystem.Models.Users.Student;
 
 namespace StudentAssessmentSystem.UI.Forms.Student
 {
-    /// <summary>
-    /// Shows all available tests that student can take
-    /// </summary>
     public partial class AvailableTestsForm : Form
     {
-        private TestRepository _testRepository;
-        private TestResultRepository _resultRepository;
-        private ListView lvAvailableTests;
+        private StudentModel _currentStudent;
+        private DataGridView dgvTests;
         private Button btnTakeTest;
         private Button btnClose;
 
-        public AvailableTestsForm()
+        public AvailableTestsForm(StudentModel currentStudent)
         {
-            _testRepository = new TestRepository();
-            _resultRepository = new TestResultRepository();
-
+            _currentStudent = currentStudent;
             InitializeComponent();
             LoadAvailableTests();
         }
@@ -32,54 +26,96 @@ namespace StudentAssessmentSystem.UI.Forms.Student
         private void InitializeComponent()
         {
             this.Text = "Available Tests";
-            this.Size = new Size(900, 600);
+            this.Size = new Size(900, 500);
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.BackColor = Color.WhiteSmoke;
 
-            // Header Label
-            Label lblHeader = new Label
+            // Title Label
+            Label lblTitle = new Label
             {
-                Location = new Point(30, 20),
-                Size = new Size(840, 40),
                 Text = "📝 Available Tests",
-                Font = new Font("Arial", 18, FontStyle.Bold),
-                ForeColor = Color.FromArgb(52, 73, 94)
+                Font = new Font("Arial", 16, FontStyle.Bold),
+                Location = new Point(30, 20),
+                Size = new Size(300, 30)
             };
-            this.Controls.Add(lblHeader);
+            this.Controls.Add(lblTitle);
 
-            // ListView to display tests
-            lvAvailableTests = new ListView
+            // DataGridView for tests
+            dgvTests = new DataGridView
             {
-                Location = new Point(30, 80),
-                Size = new Size(840, 400),
-                View = View.Details,
-                FullRowSelect = true,
-                GridLines = true,
-                Font = new Font("Arial", 10)
+                Location = new Point(30, 60),
+                Size = new Size(830, 350),
+                AllowUserToAddRows = false,
+                AllowUserToDeleteRows = false,
+                ReadOnly = true,
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                MultiSelect = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
             };
 
-            // Add columns
-            lvAvailableTests.Columns.Add("Instance ID", 80);
-            lvAvailableTests.Columns.Add("Test Title", 300);
-            lvAvailableTests.Columns.Add("Subject", 150);
-            lvAvailableTests.Columns.Add("Questions", 100);
-            lvAvailableTests.Columns.Add("Duration", 100);
-            lvAvailableTests.Columns.Add("Status", 100);
+            // ✅ CRITICAL: Add columns properly with DataPropertyName
+            DataGridViewTextBoxColumn colInstanceId = new DataGridViewTextBoxColumn
+            {
+                Name = "InstanceId",
+                HeaderText = "Instance ID",
+                DataPropertyName = "InstanceId",
+                Visible = false  // Hidden but accessible
+            };
 
-            lvAvailableTests.SelectedIndexChanged += LvAvailableTests_SelectedIndexChanged;
-            this.Controls.Add(lvAvailableTests);
+            DataGridViewTextBoxColumn colTestTitle = new DataGridViewTextBoxColumn
+            {
+                Name = "TestTitle",
+                HeaderText = "Test Title",
+                DataPropertyName = "TestTitle"
+            };
+
+            DataGridViewTextBoxColumn colSubject = new DataGridViewTextBoxColumn
+            {
+                Name = "Subject",
+                HeaderText = "Subject",
+                DataPropertyName = "Subject"
+            };
+
+            DataGridViewTextBoxColumn colQuestions = new DataGridViewTextBoxColumn
+            {
+                Name = "Questions",
+                HeaderText = "Questions",
+                DataPropertyName = "Questions"
+            };
+
+            DataGridViewTextBoxColumn colDuration = new DataGridViewTextBoxColumn
+            {
+                Name = "Duration",
+                HeaderText = "Duration",
+                DataPropertyName = "Duration"
+            };
+
+            DataGridViewTextBoxColumn colStatus = new DataGridViewTextBoxColumn
+            {
+                Name = "Status",
+                HeaderText = "Status",
+                DataPropertyName = "Status"
+            };
+
+            dgvTests.Columns.AddRange(new DataGridViewColumn[] {
+                colInstanceId,
+                colTestTitle,
+                colSubject,
+                colQuestions,
+                colDuration,
+                colStatus
+            });
+
+            this.Controls.Add(dgvTests);
 
             // Take Test Button
             btnTakeTest = new Button
             {
-                Location = new Point(620, 500),
-                Size = new Size(120, 40),
                 Text = "Take Test",
-                Font = new Font("Arial", 11, FontStyle.Bold),
-                BackColor = Color.FromArgb(46, 204, 113),
-                ForeColor = Color.White,
-                Cursor = Cursors.Hand,
-                Enabled = false
+                Location = new Point(620, 425),
+                Size = new Size(120, 35),
+                BackColor = Color.LightGreen,
+                Font = new Font("Arial", 10, FontStyle.Bold),
+                Cursor = Cursors.Hand
             };
             btnTakeTest.Click += BtnTakeTest_Click;
             this.Controls.Add(btnTakeTest);
@@ -87,12 +123,10 @@ namespace StudentAssessmentSystem.UI.Forms.Student
             // Close Button
             btnClose = new Button
             {
-                Location = new Point(750, 500),
-                Size = new Size(120, 40),
                 Text = "Close",
-                Font = new Font("Arial", 11, FontStyle.Bold),
+                Location = new Point(750, 425),
+                Size = new Size(110, 35),
                 BackColor = Color.LightGray,
-                ForeColor = Color.Black,
                 Cursor = Cursors.Hand
             };
             btnClose.Click += (s, e) => this.Close();
@@ -103,153 +137,119 @@ namespace StudentAssessmentSystem.UI.Forms.Student
         {
             try
             {
-                lvAvailableTests.Items.Clear();
+                // Get student's enrolled section IDs
+                List<int> sectionIds = _currentStudent.EnrolledSectionIds ?? new List<int>();
 
-                // Get all active test instances
-                List<TestInstance> testInstances = null;
-
-                try
+                if (sectionIds.Count == 0)
                 {
-                    testInstances = _testRepository.GetActiveTestInstances();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error getting test instances:\n{ex.Message}\n\nTry creating a test first.",
-                        "No Tests Available", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("You are not enrolled in any sections.",
+                        "No Sections", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 
-                if (testInstances == null || testInstances.Count == 0)
+                // Load test instances for student's sections
+                TestInstanceRepository instanceRepo = new TestInstanceRepository();
+                List<TestInstance> instances = instanceRepo.GetActiveTestInstancesByStudentSections(
+                    _currentStudent.UserId, sectionIds);
+
+                if (instances.Count == 0)
                 {
-                    MessageBox.Show("No active tests available at this time.\n\nPlease contact your teacher.",
-                        "No Tests", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("No tests available for you at this time.\n\n" +
+                                   "You may have already completed all active tests assigned to your sections.",
+                                   "No Tests",
+                                   MessageBoxButtons.OK,
+                                   MessageBoxIcon.Information);
                     return;
                 }
 
-                int studentId = SessionManager.GetCurrentUserId();
+                // Clear and populate the DataGridView
+                dgvTests.Rows.Clear();
 
-                foreach (var instance in testInstances)
+                foreach (var instance in instances)
                 {
-                    try
-                    {
-                        // Check if student already took this test
-                        var existingResult = _resultRepository.GetResultByStudentAndInstance(
-                            studentId, instance.InstanceId);
+                    // ✅ PROPER: Add all values in correct order
+                    int rowIndex = dgvTests.Rows.Add();
+                    DataGridViewRow row = dgvTests.Rows[rowIndex];
 
-                        // Skip if already taken and completed
-                        if (existingResult != null && existingResult.IsCompleted)
-                            continue;
-
-                        // Get test details
-                        var test = _testRepository.GetTestById(instance.TestId);
-                        if (test == null)
-                        {
-                            Console.WriteLine($"Test ID {instance.TestId} not found. Skipping...");
-                            continue;
-                        }
-
-                        // Create list item
-                        ListViewItem item = new ListViewItem(instance.InstanceId.ToString());
-                        item.SubItems.Add(test.Title ?? "Untitled Test");
-                        item.SubItems.Add(test.SubjectName ?? "N/A");
-
-                        // Handle null Questions list
-                        int questionCount = (test.Questions != null) ? test.Questions.Count : 0;
-                        item.SubItems.Add(questionCount.ToString());
-
-                        item.SubItems.Add($"{test.DurationMinutes} mins");
-                        item.SubItems.Add("Available");
-                        item.Tag = instance; // Store the instance object
-                        item.BackColor = Color.LightGreen;
-
-                        lvAvailableTests.Items.Add(item);
-                    }
-                    catch (Exception ex)
-                    {
-                        // Log error but continue with other tests
-                        Console.WriteLine($"Error loading test instance {instance.InstanceId}: {ex.Message}");
-                        continue;
-                    }
+                    row.Cells["InstanceId"].Value = instance.InstanceId;
+                    row.Cells["TestTitle"].Value = instance.InstanceTitle ?? "Untitled";
+                    row.Cells["Subject"].Value = instance.SubjectName ?? "N/A";
+                    row.Cells["Questions"].Value = "N/A";  // Can load from question count later
+                    row.Cells["Duration"].Value = instance.DurationMinutes + " min";
+                    row.Cells["Status"].Value = "Available";
                 }
 
-                if (lvAvailableTests.Items.Count == 0)
-                {
-                    MessageBox.Show("No tests available for you at this time.\n\nYou may have already completed all active tests.",
-                        "No Tests", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
+                MessageBox.Show($"Loaded {instances.Count} test(s) successfully!",
+                    "Tests Loaded", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading tests:\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
+                MessageBox.Show($"Error loading tests: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-
-        private void LvAvailableTests_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            btnTakeTest.Enabled = lvAvailableTests.SelectedItems.Count > 0;
-        }
-
         private void BtnTakeTest_Click(object sender, EventArgs e)
         {
-            if (lvAvailableTests.SelectedItems.Count == 0)
-            {
-                MessageBox.Show("Please select a test to take.", "Selection Required",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
             try
             {
-                // Get selected test instance
-                TestInstance selectedInstance = lvAvailableTests.SelectedItems[0].Tag as TestInstance;
-                if (selectedInstance == null) return;
+                // ✅ Validation
+                if (dgvTests.SelectedRows.Count == 0)
+                {
+                    MessageBox.Show("Please select a test to take.", "No Selection",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
 
-                // Get test details for confirmation
-                var test = _testRepository.GetTestById(selectedInstance.TestId);
+                // ✅ Get InstanceId safely with NULL check
+                DataGridViewRow selectedRow = dgvTests.SelectedRows[0];
+                object instanceIdValue = selectedRow.Cells["InstanceId"].Value;
 
-                DialogResult confirmResult = MessageBox.Show(
-                    $"You are about to start:\n\n" +
-                    $"Test: {test.Title}\n" +
-                    $"Duration: {test.DurationMinutes} minutes\n" +
-                    $"Questions: {test.Questions?.Count ?? 0}\n\n" +
-                    $"⚠️ Once started, the timer cannot be paused!\n\n" +
-                    $"Are you ready to begin?",
-                    "Start Test Confirmation",
+                if (instanceIdValue == null || instanceIdValue == DBNull.Value)
+                {
+                    MessageBox.Show("Invalid test instance. Please refresh and try again.",
+                        "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // ✅ Parse instance ID
+                int instanceId;
+                if (!int.TryParse(instanceIdValue.ToString(), out instanceId))
+                {
+                    MessageBox.Show($"Invalid instance ID format: {instanceIdValue}",
+                        "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // ✅ Debug: Show what we got
+                string testTitle = selectedRow.Cells["TestTitle"].Value?.ToString() ?? "Unknown";
+                DialogResult confirm = MessageBox.Show(
+                    $"You are about to take:\n\n{testTitle}\n\nInstance ID: {instanceId}\n\nProceed?",
+                    "Confirm",
                     MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question
-                );
+                    MessageBoxIcon.Question);
 
-                if (confirmResult != DialogResult.Yes)
+                if (confirm == DialogResult.No)
                     return;
 
-                // Launch TakeTestForm
-                TakeTestForm takeTestForm = new TakeTestForm(
-                    selectedInstance.TestId,
-                    selectedInstance.InstanceId
-                );
-
+                // ✅ Open TestTakingForm
+                var testForm = new TestTakingForm(_currentStudent, instanceId);
                 this.Hide();
-                DialogResult result = takeTestForm.ShowDialog();
+
+                DialogResult result = testForm.ShowDialog();
+
                 this.Show();
 
-                // Refresh list after test completion
                 if (result == DialogResult.OK)
                 {
-                    LoadAvailableTests();
-                    MessageBox.Show("Test completed successfully! Check your results.", "Success",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                    this.DialogResult = DialogResult.OK;
-                    this.Close();
+                    LoadAvailableTests();  // Refresh list
                 }
             }
             catch (Exception ex)
             {
                 this.Show();
-                MessageBox.Show($"Error starting test:\n{ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

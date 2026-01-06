@@ -22,7 +22,7 @@ namespace StudentAssessmentSystem.Models.Assessment
         public string Explanation { get; set; }  // Shown after answering
         public string ImagePath { get; set; }    // Optional image
         public int OrderNumber { get; set; }     // Order in test
-
+        public int Points { get; set; }
         protected Question()
         {
             PointValue = 1; // Default 1 point

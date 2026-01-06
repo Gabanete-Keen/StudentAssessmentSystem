@@ -1,5 +1,6 @@
 ﻿using StudentAssessmentSystem.DataAccess.Repositories;
 using StudentAssessmentSystem.Models.Assessment;
+using StudentAssessmentSystem.Models.Academic;
 using StudentAssessmentSystem.Utilities;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
     {
         private TestRepository _testRepository;
         private TestInstanceRepository _instanceRepository;
+        private SectionRepository _sectionRepository;  // ✅ ADD THIS
         private int _teacherId;
 
         // UI Controls
@@ -31,6 +33,11 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
         private DateTimePicker dtpEndDate;
         private Label lblEndTime;
         private DateTimePicker dtpEndTime;
+
+        // ✅ ADD THESE
+        private Label lblSections;
+        private CheckedListBox clbSections;
+
         private DataGridView dgvInstances;
         private Button btnCreateInstance;
         private Button btnDeactivate;
@@ -41,16 +48,18 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             _teacherId = SessionManager.CurrentUserId;
             _testRepository = new TestRepository();
             _instanceRepository = new TestInstanceRepository();
+            _sectionRepository = new SectionRepository();  // ✅ ADD THIS
 
             InitializeComponent();
             LoadTests();
+            LoadSections();  // ✅ ADD THIS
             LoadTestInstances();
         }
 
         private void InitializeComponent()
         {
             this.Text = "Test Administration";
-            this.Size = new Size(1000, 700);
+            this.Size = new Size(1000, 750);  // ✅ Increased height
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.WhiteSmoke;
 
@@ -172,7 +181,28 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
                 ShowUpDown = true
             };
             this.Controls.Add(dtpEndTime);
-            yPos += 50;
+            yPos += 40;
+
+            // ✅ ADD SECTIONS SELECTOR
+            lblSections = new Label
+            {
+                Text = "Assign to Sections:",
+                Location = new Point(20, yPos),
+                Size = new Size(150, 20),
+                Font = new Font("Arial", 10, FontStyle.Bold)
+            };
+            this.Controls.Add(lblSections);
+            yPos += 25;
+
+            clbSections = new CheckedListBox
+            {
+                Location = new Point(130, yPos),
+                Size = new Size(400, 80),
+                CheckOnClick = true,
+                Font = new Font("Arial", 9)
+            };
+            this.Controls.Add(clbSections);
+            yPos += 90;
 
             // Create Button
             btnCreateInstance = new Button
@@ -202,7 +232,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             dgvInstances = new DataGridView
             {
                 Location = new Point(20, yPos),
-                Size = new Size(940, 300),
+                Size = new Size(940, 200),  // ✅ Reduced height
                 BackgroundColor = Color.White,
                 AutoGenerateColumns = false,
                 AllowUserToAddRows = false,
@@ -212,7 +242,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             };
             SetupInstanceGridColumns();
             this.Controls.Add(dgvInstances);
-            yPos += 310;
+            yPos += 210;
 
             // Buttons
             btnDeactivate = new Button
@@ -320,6 +350,29 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             }
         }
 
+        // ✅ ADD THIS METHOD
+        private void LoadSections()
+        {
+            try
+            {
+                var sections = _sectionRepository.GetAll();
+
+                clbSections.Items.Clear();
+                clbSections.DisplayMember = "SectionName";
+                clbSections.ValueMember = "SectionId";
+
+                foreach (var section in sections)
+                {
+                    clbSections.Items.Add(section);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading sections: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void LoadTestInstances()
         {
             try
@@ -370,6 +423,14 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
                 return;
             }
 
+            // ✅ ADD VALIDATION FOR SECTIONS
+            if (clbSections.CheckedItems.Count == 0)
+            {
+                MessageBox.Show("Please select at least one section.", "Validation Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             try
             {
                 var selectedTest = (Test)cmbTests.SelectedItem;
@@ -400,17 +461,52 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
 
                 if (instanceId > 0)
                 {
-                    MessageBox.Show("Test session created successfully! Students can now take this test.",
-                        "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    // ✅ SAVE SECTION ASSIGNMENTS
+                    bool sectionsAssigned = AssignSectionsToInstance(instanceId);
 
-                    txtInstanceTitle.Clear();
-                    LoadTestInstances();
+                    if (sectionsAssigned)
+                    {
+                        MessageBox.Show("Test session created successfully! Students can now take this test.",
+                            "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                        txtInstanceTitle.Clear();
+                        foreach (int i in clbSections.CheckedIndices)
+                        {
+                            clbSections.SetItemChecked(i, false);
+                        }
+                        LoadTestInstances();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Test instance created but failed to assign sections.",
+                            "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error creating test session: {ex.Message}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // ✅ ADD THIS METHOD
+        private bool AssignSectionsToInstance(int instanceId)
+        {
+            try
+            {
+                foreach (var item in clbSections.CheckedItems)
+                {
+                    var section = (Section)item;
+                    _instanceRepository.AssignSectionToInstance(instanceId, section.SectionId);
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error assigning sections: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
             }
         }
 

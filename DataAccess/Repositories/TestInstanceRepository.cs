@@ -11,9 +11,7 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
    
     public class TestInstanceRepository
     {
-        /// <summary>
         /// Creates a new test instance (test session)
-        /// </summary>
         public int CreateTestInstance(TestInstance instance)
         {
             try
@@ -164,7 +162,11 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                 {
                     conn.Open();
 
-                    string query = @"SELECT * FROM TestInstances WHERE InstanceId = @InstanceId";
+                    // ✅ JOIN with Tests table to get DurationMinutes
+                    string query = @"SELECT ti.*, t.DurationMinutes 
+                            FROM TestInstances ti
+                            INNER JOIN Tests t ON ti.TestId = t.TestId
+                            WHERE ti.InstanceId = @InstanceId";
 
                     using (var cmd = new MySqlCommand(query, conn))
                     {
@@ -183,7 +185,12 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                                     StartDate = reader.GetDateTime("StartDate"),
                                     EndDate = reader.GetDateTime("EndDate"),
                                     IsActive = reader.GetBoolean("IsActive"),
-                                    CreatedDate = reader.GetDateTime("CreatedDate")
+                                    CreatedDate = reader.GetDateTime("CreatedDate"),
+
+                                    // ✅ ADD DurationMinutes from JOIN
+                                    DurationMinutes = reader.IsDBNull(reader.GetOrdinal("DurationMinutes"))
+                                        ? 60  // Default 60 minutes if NULL
+                                        : reader.GetInt32("DurationMinutes")
                                 };
                             }
                         }
@@ -197,6 +204,38 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
 
             return null;
         }
+
+        /// <summary>
+        /// Assigns a section to a test instance
+        /// </summary>
+        public bool AssignSectionToInstance(int instanceId, int sectionId)
+        {
+            try
+            {
+                using (var conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+
+                    string query = @"INSERT INTO testinstancesections (InstanceId, SectionId)
+                            VALUES (@InstanceId, @SectionId)";
+
+                    using (var cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@InstanceId", instanceId);
+                        cmd.Parameters.AddWithValue("@SectionId", sectionId);
+
+                        int rowsAffected = cmd.ExecuteNonQuery();
+                        return rowsAffected > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error assigning section to instance: {ex.Message}", ex);
+            }
+        }
+
+
 
         /// <summary>
         /// Checks if a student has already taken this test instance
@@ -260,5 +299,105 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
                 throw new Exception($"Error updating test instance status: {ex.Message}", ex);
             }
         }
+
+        /// Gets active test instances for a student based on their enrolled sections
+        /// Filters out tests the student has already completed
+        public List<TestInstance> GetActiveTestInstancesByStudentSections(int studentId, List<int> sectionIds)
+        {
+            List<TestInstance> instances = new List<TestInstance>();
+
+            try
+            {
+                if (sectionIds == null || sectionIds.Count == 0)
+                    return instances;
+
+                using (var conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+
+                    // Build parameterized IN clause
+                    string sectionIdsString = string.Join(",", sectionIds);
+
+                    string query = $@"
+                SELECT DISTINCT
+                    ti.InstanceId,
+                    ti.TestId,
+                    ti.TeacherId,
+                    ti.InstanceTitle,
+                    ti.StartDate,
+                    ti.EndDate,
+                    ti.IsActive,
+                    ti.CreatedDate,
+                    t.TestTitle,
+                    t.Description,
+                    t.DurationMinutes,
+                    t.TotalPoints,
+                    t.PassingScore,
+                    s.SubjectName,
+                    (SELECT COUNT(*) FROM questions WHERE TestId = t.TestId) as QuestionCount
+                FROM testinstances ti
+                INNER JOIN tests t ON ti.TestId = t.TestId
+                LEFT JOIN subjects s ON t.SubjectId = s.SubjectId
+                INNER JOIN testinstancesections tis ON ti.InstanceId = tis.InstanceId
+                WHERE ti.IsActive = 1
+                  AND NOW() BETWEEN ti.StartDate AND ti.EndDate
+                  AND tis.SectionId IN ({sectionIdsString})
+                  AND NOT EXISTS (
+                      SELECT 1 FROM testresults tr 
+                      WHERE tr.InstanceId = ti.InstanceId 
+                        AND tr.StudentId = @StudentId
+                        AND tr.IsCompleted = 1
+                  )
+                ORDER BY ti.StartDate DESC";
+
+                    using (var cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@StudentId", studentId);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                // Only include tests with questions
+                                int questionCount = reader.GetInt32("QuestionCount");
+                                if (questionCount == 0)
+                                    continue;
+
+                                var instance = new TestInstance
+                                {
+                                    InstanceId = reader.GetInt32("InstanceId"),
+                                    TestId = reader.GetInt32("TestId"),
+                                    TeacherId = reader.GetInt32("TeacherId"),
+                                    InstanceTitle = reader.GetString("InstanceTitle"),
+                                    StartDate = reader.GetDateTime("StartDate"),
+                                    EndDate = reader.GetDateTime("EndDate"),
+                                    IsActive = reader.GetBoolean("IsActive"),
+                                    CreatedDate = reader.GetDateTime("CreatedDate"),
+
+                                    // Display properties
+                                    TestTitle = reader.GetString("TestTitle"),
+                                    TestDescription = reader.IsDBNull(reader.GetOrdinal("Description"))
+                                        ? "" : reader.GetString("Description"),
+                                    DurationMinutes = reader.GetInt32("DurationMinutes"),
+                                    TotalPoints = reader.GetInt32("TotalPoints"),
+                                    PassingScore = reader.GetDouble("PassingScore"),
+                                    SubjectName = reader.IsDBNull(reader.GetOrdinal("SubjectName"))
+                                        ? "N/A" : reader.GetString("SubjectName")
+                                };
+
+                                instances.Add(instance);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error getting test instances for student sections: {ex.Message}\n{ex.StackTrace}", ex);
+            }
+
+            return instances;
+        }
+
     }
 }

@@ -22,6 +22,13 @@ namespace StudentAssessmentSystem.Models.Assessment
 
         // ===== NAVIGATION PROPERTIES =====
         public Test Test { get; set; }
+        public string TestTitle { get; set; }
+        public string TestDescription { get; set; }
+        public int DurationMinutes { get; set; }
+        public int TotalPoints { get; set; }
+        public double PassingScore { get; set; }
+        public string SubjectName { get; set; }
+
 
         /// Constructor - Sets default values
         public TestInstance()
