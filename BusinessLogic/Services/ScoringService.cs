@@ -30,57 +30,47 @@ namespace StudentAssessmentSystem.BusinessLogic.Services
         /// Updates the TestResult object with calculated scores
         public void ScoreTestResult(TestResult result, List<Question> questions)
         {
+            Console.WriteLine($"DEBUG: Scoring {result.Answers?.Count ?? 0} answers...");
+
             if (result.Answers == null || questions == null)
+            {
+                Console.WriteLine("DEBUG: Null answers/questions - skipping");
                 return;
+            }
 
-            int totalPoints = 0;
-            int earnedPoints = 0;
-
-            // Score each answer
+            int totalPoints = 0, earnedPoints = 0;
             foreach (var answer in result.Answers)
             {
-                // Find the question
-                Question question = questions.FirstOrDefault(q => q.QuestionId == answer.QuestionId);
+                var question = questions.FirstOrDefault(q => q.QuestionId == answer.QuestionId);
                 if (question == null)
+                {
+                    Console.WriteLine($"DEBUG: Question {answer.QuestionId} not found");
                     continue;
+                }
 
-                // Add to total possible points
                 totalPoints += question.PointValue;
+                int studentChoice = answer.SelectedChoiceId ?? 0;
+                bool isCorrect = question.CheckAnswer(studentChoice);  // PROBLEM HERE
 
-                // Check if answer is correct
-                bool isCorrect = question.CheckAnswer(answer.SelectedChoiceId);
+                Console.WriteLine($"Q{answer.QuestionId}: Student={studentChoice}, Correct?={isCorrect}, Points={question.PointValue}");
 
                 if (isCorrect)
                 {
-                    answer.IsCorrect = true;
-                    answer.PointsEarned = question.PointValue;
                     earnedPoints += question.PointValue;
-                }
-                else
-                {
-                    answer.IsCorrect = false;
-                    answer.PointsEarned = 0;
                 }
             }
 
-            // Update test result
             result.RawScore = earnedPoints;
             result.TotalPoints = totalPoints;
+            if (totalPoints > 0) result.Percentage = (decimal)earnedPoints / totalPoints * 100;
+            result.AssignLetterGrade();
+            result.Passed = result.Percentage >= 60;
 
-            // Calculate percentage
-            if (totalPoints > 0)
-                result.Percentage = ((decimal)earnedPoints / totalPoints) * 100;
-            else
-                result.Percentage = 0;
-
-            // Assign letter grade
-            result.LetterGrade = CalculateLetterGrade(result.Percentage);
-
-            // Check if passed
-            result.Passed = result.Percentage >= 60; // 60% passing
+            Console.WriteLine($"FINAL: {earnedPoints}/{totalPoints} = {result.Percentage}%");
         }
 
-        
+
+
         /// Calculates letter grade from percentage
         public string CalculateLetterGrade(decimal percentage)
         {

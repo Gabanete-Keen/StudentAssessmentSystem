@@ -2,6 +2,8 @@
 using StudentAssessmentSystem.DataAccess;
 using StudentAssessmentSystem.DataAccess.Repositories;
 using StudentAssessmentSystem.Utilities;
+using StudentAssessmentSystem.Models.Results;  // ADDED for TestResult
+using StudentAssessmentSystem.Models.Assessment;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -22,12 +24,27 @@ namespace StudentAssessmentSystem.UI.Forms.Student
 
         public StudentResultsForm()
         {
-            _resultRepository = new TestResultRepository();
-            _currentStudentId = SessionManager.GetCurrentUserId();
+            try
+            {
+                _resultRepository = new TestResultRepository();
+                _currentStudentId = SessionManager.GetCurrentUserId();  // Ensure SessionManager exists
+                if (_currentStudentId == 0)
+                {
+                    MessageBox.Show("No student session found. Please login again.", "Session Error");
+                    this.Close();
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Initialization error: {ex.Message}", "Error");
+                this.Close();
+                return;
+            }
             InitializeComponent();
             LoadTestResults();
             LoadSummaryStats();
-        }
+        }      
 
         private void InitializeComponent()
         {
@@ -119,39 +136,31 @@ namespace StudentAssessmentSystem.UI.Forms.Student
             try
             {
                 var results = _resultRepository.GetResultsByStudent(_currentStudentId);
-
                 if (results == null || results.Count == 0)
                 {
-                    MessageBox.Show(
-                        "You haven't taken any tests yet.",
-                        "No Results Available",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information
-                    );
+                    MessageBox.Show("You haven't taken any tests yet.", "No Results Available",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
                     dgvResults.DataSource = null;
                     btnViewDetails.Enabled = false;
                     return;
                 }
 
                 var displayData = new List<dynamic>();
-
                 using (var connection = DatabaseConnection.GetConnection())
                 {
                     connection.Open();
-
                     foreach (var result in results)
                     {
                         string query = @"
-                            SELECT t.TestTitle, s.SubjectName
-                            FROM Tests t
-                            INNER JOIN TestInstances ti ON t.TestId = ti.TestId
-                            INNER JOIN Subjects s ON t.SubjectId = s.SubjectId
-                            WHERE ti.InstanceId = @InstanceId";
+                    SELECT t.TestTitle, s.SubjectName 
+                    FROM Tests t 
+                    INNER JOIN TestInstances ti ON t.TestId = ti.TestId 
+                    INNER JOIN Subjects s ON t.SubjectId = s.SubjectId 
+                    WHERE ti.InstanceId = @InstanceId";
 
                         using (var cmd = new MySqlCommand(query, connection))
                         {
                             cmd.Parameters.AddWithValue("@InstanceId", result.InstanceId);
-
                             using (var reader = cmd.ExecuteReader())
                             {
                                 if (reader.Read())
@@ -159,88 +168,38 @@ namespace StudentAssessmentSystem.UI.Forms.Student
                                     displayData.Add(new
                                     {
                                         ResultId = result.ResultId,
-                                        InstanceId = result.InstanceId,   // ✅ store instanceId too
+                                        InstanceId = result.InstanceId,
                                         TestTitle = reader.GetString("TestTitle"),
                                         Subject = reader.GetString("SubjectName"),
                                         DateTaken = result.StartTime.ToString("MMM dd, yyyy"),
-                                        Score = $"{result.RawScore} / {result.TotalPoints}",
+                                        Score = $"{result.RawScore}/{result.TotalPoints}",
                                         Percentage = $"{result.Percentage:F1}%",
                                         Grade = result.LetterGrade,
-                                        Status = result.Passed ? "✓ PASSED" : "✗ FAILED"
+                                        Status = result.Passed ? "PASSED" : "FAILED"
                                     });
                                 }
-                                reader.Close();
                             }
                         }
                     }
                 }
 
-                // Bind to DataGridView
                 dgvResults.DataSource = displayData;
-
-                Application.DoEvents();
-                dgvResults.Update();
                 dgvResults.Refresh();
 
-                try
-                {
-                    // Hide technical ID columns
-                    if (dgvResults.Columns["ResultId"] != null)
-                        dgvResults.Columns["ResultId"].Visible = false;
+                // Hide ID columns
+                if (dgvResults.Columns["ResultId"] != null) dgvResults.Columns["ResultId"].Visible = false;
+                if (dgvResults.Columns["InstanceId"] != null) dgvResults.Columns["InstanceId"].Visible = false;
 
-                    if (dgvResults.Columns["InstanceId"] != null)
-                        dgvResults.Columns["InstanceId"].Visible = false;
-
-                    dgvResults.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
-
-                    foreach (DataGridViewColumn col in dgvResults.Columns)
-                    {
-                        switch (col.Name)
-                        {
-                            case "TestTitle":
-                                col.HeaderText = "Test Name";
-                                col.Width = 250;
-                                break;
-                            case "Subject":
-                                col.HeaderText = "Subject";
-                                col.Width = 150;
-                                break;
-                            case "DateTaken":
-                                col.HeaderText = "Date Taken";
-                                col.Width = 120;
-                                break;
-                            case "Score":
-                                col.HeaderText = "Score";
-                                col.Width = 100;
-                                break;
-                            case "Percentage":
-                                col.HeaderText = "Percentage";
-                                col.Width = 100;
-                                break;
-                            case "Grade":
-                                col.HeaderText = "Grade";
-                                col.Width = 80;
-                                break;
-                            case "Status":
-                                col.HeaderText = "Status";
-                                col.Width = 120;
-                                break;
-                        }
-                    }
-
-                    dgvResults.CellFormatting += DgvResults_CellFormatting;
-                }
-                catch (Exception colEx)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Column error: {colEx.Message}");
-                }
+                // Resize headers
+                dgvResults.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading results:\n{ex.Message}", "Error",
+                MessageBox.Show($"Error loading results: {ex.Message}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
 
         private void LoadSummaryStats()
         {

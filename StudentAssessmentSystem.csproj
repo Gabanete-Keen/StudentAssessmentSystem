@@ -119,6 +119,7 @@
     <Compile Include="DataAccess\Repositories\QuestionRepository.cs" />
     <Compile Include="DataAccess\Repositories\SectionRepository.cs" />
     <Compile Include="DataAccess\Repositories\StudentAnswerRepository.cs" />
+    <Compile Include="DataAccess\Repositories\StudentRepository.cs" />
     <Compile Include="DataAccess\Repositories\TestInstanceRepository.cs" />
     <Compile Include="DataAccess\Repositories\TestRepository.cs" />
     <Compile Include="DataAccess\Repositories\TestResultRepository.cs" />

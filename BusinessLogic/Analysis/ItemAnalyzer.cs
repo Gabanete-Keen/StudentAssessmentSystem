@@ -7,12 +7,16 @@ using System.Threading.Tasks;
 using StudentAssessmentSystem.Models.Assessment;
 using StudentAssessmentSystem.Models.Results;
 using StudentAssessmentSystem.DataAccess.Repositories;
+
 // Purpose: Performs item analysis calculations (Difficulty & Discrimination)
 // Connected to: QuestionStatistics, TestResult, StudentAnswer
 // Uses: MySQL database through repositories
+
 namespace StudentAssessmentSystem.BusinessLogic.Analysis
 {
+    /// <summary>
     /// Simple item analyzer - calculates difficulty and discrimination
+    /// </summary>
     public class ItemAnalyzer
     {
         // Repositories to get data from database
@@ -36,17 +40,23 @@ namespace StudentAssessmentSystem.BusinessLogic.Analysis
             // STEP 1: Get all student answers for this question
             List<StudentAnswer> answers = _answerRepository.GetAnswersForQuestion(questionId, testInstanceId);
 
-            // Validation: Need at least 30 students for statistical validity
-            if (answers.Count < 30)
+            // ✅ UPDATED: More flexible validation (removed 30-student requirement)
+            if (answers.Count == 0)
             {
-                throw new Exception($"Not enough data. Need at least 30 students, only have {answers.Count}.");
+                throw new Exception($"No student responses found for this question.");
             }
 
             // STEP 2: Calculate Difficulty Index (P-value)
+            // This works with any sample size > 0
             decimal difficultyIndex = CalculateDifficultyIndex(answers);
 
             // STEP 3: Calculate Discrimination Index (D-value)
-            decimal discriminationIndex = CalculateDiscriminationIndex(questionId, testInstanceId, answers);
+            // This requires minimum 10 students for meaningful 27% groups
+            decimal? discriminationIndex = null;
+            if (answers.Count >= 10)
+            {
+                discriminationIndex = CalculateDiscriminationIndex(questionId, testInstanceId, answers);
+            }
 
             // STEP 4: Create statistics object
             QuestionStatistics stats = new QuestionStatistics
@@ -66,12 +76,11 @@ namespace StudentAssessmentSystem.BusinessLogic.Analysis
         /// <summary>
         /// Calculates Difficulty Index (P-value)
         /// Formula: P = (Number of correct answers) / (Total students)
-        /// 
-        /// Simple interpretation:
-        /// - P > 0.75  = Easy question (more than 75% got it right)
-        /// - 0.25 to 0.75 = Average question (good!)
-        /// - P < 0.25  = Difficult question (less than 25% got it right)
         /// </summary>
+        /// Simple interpretation:
+        /// - P > 0.75 = Easy question (more than 75% got it right)
+        /// - 0.25 to 0.75 = Average question (good!)
+        /// - P < 0.25 = Difficult question (less than 25% got it right)
         public decimal CalculateDifficultyIndex(List<StudentAnswer> answers)
         {
             if (answers == null || answers.Count == 0)
@@ -93,26 +102,28 @@ namespace StudentAssessmentSystem.BusinessLogic.Analysis
         /// <summary>
         /// Calculates Discrimination Index (D-value)
         /// Measures if the question separates good students from weak students
-        /// 
+        /// </summary>
         /// Formula: D = P(upper 27%) - P(lower 27%)
         /// 
         /// Simple interpretation:
-        /// - D >= 0.40 = Excellent question (keeps it!)
+        /// - D >= 0.40 = Excellent question (keep it!)
         /// - 0.30 to 0.39 = Good question
         /// - 0.20 to 0.29 = OK, but can improve
         /// - D < 0.20 = Poor question (needs revision)
         /// - D <= 0 = Bad question! (Good students got it wrong, weak students got it right)
-        /// </summary>
-        public decimal CalculateDiscriminationIndex(int questionId, int testInstanceId, List<StudentAnswer> answers)
+        /// 
+        /// Returns null if sample size is too small (< 10 students)
+        public decimal? CalculateDiscriminationIndex(int questionId, int testInstanceId, List<StudentAnswer> answers)
         {
+            // ✅ UPDATED: Return null instead of 0 for small samples
             if (answers == null || answers.Count < 10)
-                return 0;
+                return null;
 
             // STEP 1: Get all test results for this test
             List<TestResult> allResults = _resultRepository.GetResultsByInstance(testInstanceId);
 
             if (allResults.Count < 10)
-                return 0;
+                return null;
 
             // STEP 2: Sort students by total score (highest to lowest)
             allResults = allResults.OrderByDescending(r => r.RawScore).ToList();
@@ -134,7 +145,7 @@ namespace StudentAssessmentSystem.BusinessLogic.Analysis
             var lowerAnswers = answers.Where(a => lowerGroup.Any(r => r.ResultId == a.ResultId)).ToList();
 
             if (upperAnswers.Count == 0 || lowerAnswers.Count == 0)
-                return 0;
+                return null;
 
             // STEP 5: Calculate percentage correct for each group
             decimal pUpper = (decimal)upperAnswers.Count(a => a.IsCorrect) / upperAnswers.Count;

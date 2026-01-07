@@ -1,10 +1,10 @@
 ﻿using StudentAssessmentSystem.UI.Forms.Teacher;
 using StudentAssessmentSystem.Utilities;
+using StudentAssessmentSystem.DataAccess;
+using MySql.Data.MySqlClient;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-
-
 
 namespace StudentAssessmentSystem.UI.Forms.Student
 {
@@ -41,13 +41,79 @@ namespace StudentAssessmentSystem.UI.Forms.Student
 
                 if (_currentStudent != null)
                 {
+                    // ✅ FIX: Load complete student data from database if StudentId is missing
+                    if (_currentStudent.StudentId == 0)
+                    {
+                        LoadCompleteStudentDataFromDatabase();
+                    }
+
                     lblWelcome.Text = $"Welcome, {_currentStudent.FullName}!";
                     lblInfo.Text = $"Student Number: {_currentStudent.StudentNumber ?? "N/A"} | Year Level: {_currentStudent.YearLevel}";
+                }
+                else
+                {
+                    MessageBox.Show("Error: Could not load student information. Please login again.",
+                        "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error loading student data:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// ✅ NEW METHOD: Loads complete student data including StudentId from database
+        /// </summary>
+        private void LoadCompleteStudentDataFromDatabase()
+        {
+            try
+            {
+                using (var conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+
+                    // Query to get StudentId based on StudentNumber (which we DO have)
+                    string query = @"
+                        SELECT 
+                            StudentId, 
+                            StudentNumber, 
+                            YearLevel
+                        FROM students
+                        WHERE StudentNumber = @StudentNumber";
+
+                    using (var cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@StudentNumber", _currentStudent.StudentNumber);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                // ✅ SET THE MISSING STUDENTID!
+                                _currentStudent.StudentId = reader.GetInt32("StudentId");
+                                _currentStudent.StudentNumber = reader.GetString("StudentNumber");
+                                _currentStudent.YearLevel = reader.GetInt32("YearLevel");
+
+                                // Update SessionManager with complete data
+                                SessionManager.CurrentUser = _currentStudent;
+
+                                // Debug confirmation
+                                System.Diagnostics.Debug.WriteLine($"✅ Loaded StudentId: {_currentStudent.StudentId} for StudentNumber: {_currentStudent.StudentNumber}");
+                            }
+                            else
+                            {
+                                MessageBox.Show($"No student record found for StudentNumber: {_currentStudent.StudentNumber}",
+                                    "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading complete student data:\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
+                    "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -115,14 +181,20 @@ namespace StudentAssessmentSystem.UI.Forms.Student
             btnLogout.Cursor = Cursors.Hand;
             btnLogout.Click += BtnLogout_Click;
             this.Controls.Add(btnLogout);
-
         }
 
         private void BtnTakeTest_Click(object sender, EventArgs e)
         {
             try
             {
-                //  Use FULL namespace to avoid ambiguity
+                // ✅ Verify StudentId is loaded before opening test form
+                if (_currentStudent.StudentId == 0)
+                {
+                    MessageBox.Show("Error: Student ID not loaded. Please logout and login again.",
+                        "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
                 var availableTestsForm = new StudentAssessmentSystem.UI.Forms.Student.AvailableTestsForm(_currentStudent);
                 this.Hide();
 

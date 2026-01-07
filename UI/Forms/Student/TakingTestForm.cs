@@ -357,7 +357,36 @@ namespace StudentAssessmentSystem.UI.Forms.Student
                     // Set submitted flag
                     _isSubmitted = true;
 
-                    // Submit the test
+                    // ✅ FIX: SAVE ALL ANSWERS FIRST
+                    bool allAnswersSaved = true;
+                    foreach (var answer in _studentAnswers)
+                    {
+                        int questionId = answer.Key;
+                        int choiceId = answer.Value;
+
+                        MultipleChoiceQuestion question = _questions.FirstOrDefault(q => q.QuestionId == questionId);
+                        if (question != null)
+                        {
+                            string saveError;
+                            bool saved = _testTakingManager.SaveAnswer(_currentResult.ResultId, question, choiceId, out saveError);
+                            if (!saved)
+                            {
+                                allAnswersSaved = false;
+                                MessageBox.Show($"Error saving answer for question {questionId}: {saveError}",
+                                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            }
+                        }
+                    }
+
+                    if (!allAnswersSaved)
+                    {
+                        MessageBox.Show("Some answers could not be saved. Please try submitting again.",
+                            "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        _isSubmitted = false;
+                        return;
+                    }
+
+                    // NOW submit the test
                     string errorMessage;
                     bool success = _testTakingManager.SubmitTest(_currentResult.ResultId, out errorMessage);
 

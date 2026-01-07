@@ -156,19 +156,28 @@ namespace StudentAssessmentSystem.BusinessLogic.Managers
 
             try
             {
+                // get the TestResult to find InstanceId
+                TestResult result = _resultRepository.GetById(resultId);
+                if (result == null)
+                {
+                    errorMessage = "Test result not found.";
+                    return false;
+                }
+
                 // Check if answer is correct
                 bool isCorrect = question.CheckAnswer(selectedChoiceId);
-                int pointsEarned = isCorrect ? question.Points : 0;
+                int pointsEarned = isCorrect ? question.PointValue : 0;  
 
                 // Create student answer
                 StudentAnswer answer = new StudentAnswer
                 {
+                    InstanceId = result.InstanceId,  
                     ResultId = resultId,
                     QuestionId = question.QuestionId,
                     SelectedChoiceId = selectedChoiceId,
                     IsCorrect = isCorrect,
                     PointsEarned = pointsEarned,
-                    TimeSpentSeconds = 0  // Can be tracked if needed
+                    TimeSpentSeconds = 0
                 };
 
                 int answerId = _answerRepository.Add(answer);
@@ -191,7 +200,7 @@ namespace StudentAssessmentSystem.BusinessLogic.Managers
 
             try
             {
-                // ✅ FIX: Get the result by ResultId instead of (0, 0)
+                // Get the result
                 TestResult result = _resultRepository.GetById(resultId);
 
                 if (result == null)
@@ -203,40 +212,68 @@ namespace StudentAssessmentSystem.BusinessLogic.Managers
                 // Get all answers for this result
                 List<StudentAnswer> answers = _answerRepository.GetAnswersByResult(resultId);
 
-                // Calculate total points earned
+                // ✅ FIX: Get the actual questions to calculate total points
+                TestInstance instance = _instanceRepository.GetById(result.InstanceId);
+                if (instance == null)
+                {
+                    errorMessage = "Test instance not found.";
+                    return false;
+                }
+
+                List<MultipleChoiceQuestion> questions = _questionRepository.GetQuestionsByTest(instance.TestId);
+                if (questions == null || questions.Count == 0)
+                {
+                    errorMessage = "No questions found for this test.";
+                    return false;
+                }
+
+                // Calculate total possible points from questions
+                int totalPossiblePoints = 0;
+                foreach (var question in questions)
+                {
+                    totalPossiblePoints += question.PointValue;
+                }
+
+                // Calculate total points earned from answers
                 int totalPointsEarned = 0;
                 foreach (var answer in answers)
                 {
                     totalPointsEarned += answer.PointsEarned;
                 }
 
+                Console.WriteLine($"DEBUG SubmitTest: Earned={totalPointsEarned}, Total={totalPossiblePoints}");
+
                 // Update result with calculated scores
                 result.RawScore = totalPointsEarned;
+                result.TotalPoints = totalPossiblePoints;  // ✅ FIX: Set correct total
                 result.SubmitTime = DateTime.Now;
                 result.IsCompleted = true;
 
-                // Calculate percentage and letter grade
-                result.CalculatePercentage();
+                // Calculate percentage
+                if (totalPossiblePoints > 0)
+                {
+                    result.Percentage = ((decimal)totalPointsEarned / totalPossiblePoints) * 100;
+                }
+                else
+                {
+                    result.Percentage = 0;
+                }
+
+                // Assign letter grade
                 result.AssignLetterGrade();
 
-                // Get test instance to check passing score
-                TestInstance instance = _instanceRepository.GetById(result.InstanceId);
-                if (instance != null)
+                // Determine if passed
+                Test test = _testRepository.GetById(instance.TestId);
+                if (test != null)
                 {
-                    Test test = _testRepository.GetById(instance.TestId);
-                    if (test != null)
-                    {
-                        result.Passed = Convert.ToDecimal(result.Percentage) >= test.PassingScore; 
-                    }
-                    else
-                    {
-                        result.Passed = result.Percentage >= 60; // Default 60%
-                    }
+                    result.Passed = result.Percentage >= test.PassingScore;
                 }
                 else
                 {
                     result.Passed = result.Percentage >= 60; // Default 60%
                 }
+
+                Console.WriteLine($"DEBUG Final: {result.RawScore}/{result.TotalPoints} = {result.Percentage}%, Grade={result.LetterGrade}, Passed={result.Passed}");
 
                 // Save the updated result
                 return _resultRepository.Update(result);
@@ -244,6 +281,7 @@ namespace StudentAssessmentSystem.BusinessLogic.Managers
             catch (Exception ex)
             {
                 errorMessage = $"Error submitting test: {ex.Message}";
+                Console.WriteLine($"ERROR in SubmitTest: {ex.Message}\n{ex.StackTrace}");
                 return false;
             }
         }

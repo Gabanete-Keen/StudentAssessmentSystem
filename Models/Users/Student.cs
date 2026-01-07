@@ -13,6 +13,7 @@ namespace StudentAssessmentSystem.Models.Users
     /// INHERITANCE: Extends User base class
     public class Student : User
     {
+        public int StudentId { get; set; }
         public string StudentNumber { get; set; }
         public int YearLevel { get; set; }
 

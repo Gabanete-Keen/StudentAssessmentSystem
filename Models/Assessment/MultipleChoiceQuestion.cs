@@ -10,17 +10,15 @@ namespace StudentAssessmentSystem.Models.Assessment
     public class MultipleChoiceQuestion : Question
     {
         public List<QuestionChoice> Choices { get; set; }
-
+        public int CorrectChoiceId { get; set; }
         public MultipleChoiceQuestion()
         {
             QuestionType = "MultipleChoice";
             Choices = new List<QuestionChoice>();
         }
 
-        /// <summary>
         /// POLYMORPHISM: Implements abstract method from Question
         /// Checks if the selected choice is correct
-        /// </summary>
         /// <param name="studentAnswer">The ChoiceId selected by student</param>
         public override bool CheckAnswer(object studentAnswer)
         {
@@ -39,15 +37,12 @@ namespace StudentAssessmentSystem.Models.Assessment
 
         /// POLYMORPHISM: Implements abstract method
         /// Returns the correct choice(s)
-
         public override object GetCorrectAnswer()
         {
             return Choices?.FirstOrDefault(c => c.IsCorrect);
         }
 
-
         /// Override validation to include choices check
-
         public override bool IsValid()
         {
             return base.IsValid() &&
@@ -55,7 +50,6 @@ namespace StudentAssessmentSystem.Models.Assessment
                    Choices.Count >= 2 &&  // At least 2 choices
                    Choices.Any(c => c.IsCorrect);  // At least 1 correct answer
         }
-
 
         /// Adds a choice to this question
         /// ENCAPSULATION: Controlled way to add choices

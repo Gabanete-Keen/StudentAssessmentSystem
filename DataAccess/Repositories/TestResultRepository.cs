@@ -195,19 +195,21 @@
                     conn.Open();
 
                     string query = @"UPDATE TestResults SET 
-                            SubmitTime = @SubmitTime,
-                            RawScore = @RawScore,
-                            Percentage = @Percentage,
-                            LetterGrade = @LetterGrade,
-                            Passed = @Passed,
-                            IsCompleted = @IsCompleted
-                            WHERE ResultId = @ResultId";
+                    SubmitTime = @SubmitTime,
+                    RawScore = @RawScore,
+                    TotalPoints = @TotalPoints,  
+                    Percentage = @Percentage,
+                    LetterGrade = @LetterGrade,
+                    Passed = @Passed,
+                    IsCompleted = @IsCompleted
+                    WHERE ResultId = @ResultId";
 
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@ResultId", result.ResultId);
-                        cmd.Parameters.AddWithValue("@SubmitTime", result.SubmitTime);
+                        cmd.Parameters.AddWithValue("@SubmitTime", result.SubmitTime ?? (object)DBNull.Value);
                         cmd.Parameters.AddWithValue("@RawScore", result.RawScore);
+                        cmd.Parameters.AddWithValue("@TotalPoints", result.TotalPoints);  // ✅ Must be included
                         cmd.Parameters.AddWithValue("@Percentage", result.Percentage);
                         cmd.Parameters.AddWithValue("@LetterGrade", result.LetterGrade ?? (object)DBNull.Value);
                         cmd.Parameters.AddWithValue("@Passed", result.Passed);

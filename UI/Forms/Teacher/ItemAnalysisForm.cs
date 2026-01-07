@@ -205,14 +205,17 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             {
                 dynamic selectedItem = cmbTests.SelectedItem;
                 int testId = selectedItem.TestId;
-
                 int testInstanceId = CreateDemoTestInstance(testId);
+
                 if (testInstanceId == 0)
                 {
                     MessageBox.Show("No test administrations found for this test.",
                         "No Data", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
-                }       
+                }
+
+                
+                PerformAnalysis(testInstanceId);
             }
             catch (Exception ex)
             {
@@ -220,6 +223,8 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+
 
 
         /// Gets the first available test instance for the given test
@@ -284,9 +289,12 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
         private void DisplayResults(Test test, List<QuestionStatistics> statisticsList)
         {
             dgvAnalysis.Rows.Clear();
-
             int questionNumber = 1;
             int needsReviewCount = 0;
+
+            // ✅ NEW: Check total sample size
+            int totalStudents = statisticsList.FirstOrDefault()?.TotalAttempts ?? 0;
+            bool smallSample = totalStudents < 30;
 
             foreach (var stats in statisticsList)
             {
@@ -298,7 +306,12 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
 
                 // Difficulty category and interpretation
                 string difficultyCategory = stats.GetDifficultyCategory();
-                string discriminationQuality = stats.GetDiscriminationQuality();
+
+                // ✅ UPDATED: Handle null discrimination index
+                string discriminationQuality = stats.DiscriminationIndex.HasValue
+                    ? stats.GetDiscriminationQuality()
+                    : "N/A (too few students)";
+
                 string status = stats.NeedsReview() ? "⚠ REVIEW" : "✓ Good";
 
                 if (stats.NeedsReview())
@@ -335,7 +348,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
                 else if (stats.DifficultyIndex < 0.25m)
                     dgvAnalysis.Rows[rowIndex].Cells["DifficultyCategory"].Style.BackColor = Color.LightCoral;
 
-                // Color code discrimination
+                // Color code discrimination (only if available)
                 if (stats.DiscriminationIndex.HasValue)
                 {
                     if (stats.DiscriminationIndex.Value >= 0.40m)
@@ -347,20 +360,30 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
                 questionNumber++;
             }
 
-            // Update summary
-            UpdateSummary(test.TestTitle, statisticsList.Count, needsReviewCount);
+            // Update summary with sample size warning
+            UpdateSummary(test.TestTitle, statisticsList.Count, needsReviewCount, totalStudents, smallSample);
         }
 
-        private void UpdateSummary(string testTitle, int totalQuestions, int needsReviewCount)
+
+        private void UpdateSummary(string testTitle, int totalQuestions, int needsReviewCount, int totalStudents, bool smallSample)
         {
             lblSummary.Text = $"📊 Analysis Complete for: {testTitle}\n\n" +
+                $"Sample Size: {totalStudents} students | " +
                 $"Total Questions: {totalQuestions} | " +
                 $"Good Questions: {totalQuestions - needsReviewCount} | " +
                 $"⚠ Need Review: {needsReviewCount}";
 
-            if (needsReviewCount > 0)
+            //  NEW: Add sample size warning
+            if (smallSample)
             {
-                lblSummary.Text += $"\n\n Questions marked with '⚠ REVIEW' are either too easy/hard or don't discriminate well between high and low performers.";
+                lblSummary.Text += $"\n\n⚠ WARNING: Small sample size ({totalStudents} students)." +
+                    $"\nFor statistically reliable results, 30+ students are recommended." +
+                    $"\nDiscrimination analysis requires minimum 10 students.";
+                lblSummary.ForeColor = Color.DarkOrange;
+            }
+            else if (needsReviewCount > 0)
+            {
+                lblSummary.Text += $"\n\nQuestions marked with '⚠ REVIEW' are either too easy/hard or don't discriminate well between high and low performers.";
                 lblSummary.ForeColor = Color.DarkOrange;
             }
             else
@@ -369,5 +392,6 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
                 lblSummary.ForeColor = Color.Green;
             }
         }
+
     }
 }
