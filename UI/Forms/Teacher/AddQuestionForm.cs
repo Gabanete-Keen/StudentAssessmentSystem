@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 using StudentAssessmentSystem.BusinessLogic.Managers;
-using StudentAssessmentSystem.DataAccess.Repositories; 
+using StudentAssessmentSystem.DataAccess.Repositories;
 using StudentAssessmentSystem.Models.Assessment;
 using StudentAssessmentSystem.Models.Enums;
 
@@ -11,20 +11,27 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
     public partial class AddQuestionForm : Form
     {
         // ✅ PRIVATE FIELDS
-        private int _testId;
+        private int? _testId;  // Nullable - null means question bank
         private int _currentQuestionNumber;
         private QuestionBankManager _questionManager;
+        private MultipleChoiceQuestion _existingQuestion;  // For edit mode
+        private bool _isEditMode;
+        private bool _isQuestionBank;
 
         // UI Controls
         private Label lblTitle;
         private Label lblQuestionText;
         private TextBox txtQuestionText;
+        private Label lblTopic;
+        private TextBox txtTopic;
         private Label lblPoints;
         private NumericUpDown numPoints;
         private Label lblDifficulty;
         private ComboBox cmbDifficulty;
         private Label lblCognitive;
         private ComboBox cmbCognitive;
+        private Label lblExplanation;
+        private TextBox txtExplanation;
 
         // Choices
         private Label lblChoices;
@@ -42,19 +49,60 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
         private Button btnSaveAndClose;
         private Button btnCancel;
 
+        #region Constructors
+
+        /// <summary>
+        /// Constructor for adding questions to a TEST
+        /// </summary>
         public AddQuestionForm(int testId, int questionNumber = 1)
         {
             _testId = testId;
             _currentQuestionNumber = questionNumber;
             _questionManager = new QuestionBankManager();
+            _isEditMode = false;
+            _isQuestionBank = false;
 
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Constructor for adding questions to QUESTION BANK (testId = null)
+        /// </summary>
+        public AddQuestionForm()
+        {
+            _testId = null;  // Question bank
+            _currentQuestionNumber = 1;
+            _questionManager = new QuestionBankManager();
+            _isEditMode = false;
+            _isQuestionBank = true;
+
+            InitializeComponent();
+            SetupQuestionBankMode();
+        }
+
+        /// <summary>
+        /// Constructor for EDITING an existing question (Question Bank)
+        /// </summary>
+        public AddQuestionForm(MultipleChoiceQuestion question)
+        {
+            _testId = question.TestId;
+            _existingQuestion = question;
+            _currentQuestionNumber = 1;
+            _questionManager = new QuestionBankManager();
+            _isEditMode = true;
+            _isQuestionBank = question.TestId == null;
+
+            InitializeComponent();
+            SetupQuestionBankMode();
+            LoadQuestionData();
+        }
+
+        #endregion
+
         private void InitializeComponent()
         {
-            this.Text = $"Add Question {_currentQuestionNumber}";
-            this.Size = new Size(700, 600);
+            this.Text = _isEditMode ? "Edit Question" : (_isQuestionBank ? "Add Question to Bank" : $"Add Question {_currentQuestionNumber}");
+            this.Size = new Size(700, 680);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.White;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -64,7 +112,7 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
 
             // ===== Title =====
             lblTitle = new Label();
-            lblTitle.Text = $"Question {_currentQuestionNumber}";
+            lblTitle.Text = _isEditMode ? "Edit Question" : (_isQuestionBank ? "Add to Question Bank" : $"Question {_currentQuestionNumber}");
             lblTitle.Font = new Font("Arial", 14, FontStyle.Bold);
             lblTitle.Location = new Point(20, yPos);
             lblTitle.Size = new Size(650, 30);
@@ -73,9 +121,10 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
 
             // ===== Question Text =====
             lblQuestionText = new Label();
-            lblQuestionText.Text = "Question Text:";
+            lblQuestionText.Text = "Question Text: *";
             lblQuestionText.Location = new Point(20, yPos);
             lblQuestionText.Size = new Size(150, 20);
+            lblQuestionText.Font = new Font("Arial", 9, FontStyle.Bold);
             this.Controls.Add(lblQuestionText);
             yPos += 25;
 
@@ -88,11 +137,30 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             this.Controls.Add(txtQuestionText);
             yPos += 70;
 
+            // ===== Topic (Only for Question Bank) =====
+            lblTopic = new Label();
+            lblTopic.Text = "Topic:";
+            lblTopic.Location = new Point(20, yPos);
+            lblTopic.Size = new Size(60, 20);
+            lblTopic.Visible = _isQuestionBank;
+            this.Controls.Add(lblTopic);
+
+            txtTopic = new TextBox();
+            txtTopic.Location = new Point(90, yPos);
+            txtTopic.Size = new Size(200, 25);
+            txtTopic.Font = new Font("Arial", 10);
+            txtTopic.Visible = _isQuestionBank;
+            this.Controls.Add(txtTopic);
+
+            if (_isQuestionBank)
+                yPos += 35;
+
             // ===== Points and Difficulty =====
             lblPoints = new Label();
-            lblPoints.Text = "Points:";
+            lblPoints.Text = "Points: *";
             lblPoints.Location = new Point(20, yPos);
             lblPoints.Size = new Size(60, 20);
+            lblPoints.Font = new Font("Arial", 9, FontStyle.Bold);
             this.Controls.Add(lblPoints);
 
             numPoints = new NumericUpDown();
@@ -104,13 +172,14 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             this.Controls.Add(numPoints);
 
             lblDifficulty = new Label();
-            lblDifficulty.Text = "Difficulty:";
-            lblDifficulty.Location = new Point(200, yPos);
-            lblDifficulty.Size = new Size(70, 20);
+            lblDifficulty.Text = "Difficulty: *";
+            lblDifficulty.Location = new Point(180, yPos);
+            lblDifficulty.Size = new Size(80, 20);
+            lblDifficulty.Font = new Font("Arial", 9, FontStyle.Bold);
             this.Controls.Add(lblDifficulty);
 
             cmbDifficulty = new ComboBox();
-            cmbDifficulty.Location = new Point(280, yPos);
+            cmbDifficulty.Location = new Point(270, yPos);
             cmbDifficulty.Size = new Size(120, 25);
             cmbDifficulty.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbDifficulty.Items.AddRange(new string[] { "Easy", "Average", "Difficult" });
@@ -118,26 +187,47 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             this.Controls.Add(cmbDifficulty);
 
             lblCognitive = new Label();
-            lblCognitive.Text = "Cognitive Level:";
-            lblCognitive.Location = new Point(420, yPos);
-            lblCognitive.Size = new Size(100, 20);
+            lblCognitive.Text = "Cognitive: *";
+            lblCognitive.Location = new Point(410, yPos);
+            lblCognitive.Size = new Size(80, 20);
+            lblCognitive.Font = new Font("Arial", 9, FontStyle.Bold);
             this.Controls.Add(lblCognitive);
 
             cmbCognitive = new ComboBox();
-            cmbCognitive.Location = new Point(530, yPos);
-            cmbCognitive.Size = new Size(130, 25);
+            cmbCognitive.Location = new Point(500, yPos);
+            cmbCognitive.Size = new Size(160, 25);
             cmbCognitive.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbCognitive.Items.AddRange(new string[] { "Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create" });
             cmbCognitive.SelectedIndex = 0;
             this.Controls.Add(cmbCognitive);
             yPos += 40;
 
+            // ===== Explanation (Optional for Question Bank) =====
+            if (_isQuestionBank)
+            {
+                lblExplanation = new Label();
+                lblExplanation.Text = "Explanation (Optional):";
+                lblExplanation.Location = new Point(20, yPos);
+                lblExplanation.Size = new Size(200, 20);
+                this.Controls.Add(lblExplanation);
+                yPos += 25;
+
+                txtExplanation = new TextBox();
+                txtExplanation.Location = new Point(20, yPos);
+                txtExplanation.Size = new Size(640, 50);
+                txtExplanation.Multiline = true;
+                txtExplanation.ScrollBars = ScrollBars.Vertical;
+                txtExplanation.Font = new Font("Arial", 9);
+                this.Controls.Add(txtExplanation);
+                yPos += 60;
+            }
+
             // ===== Choices Label =====
             lblChoices = new Label();
-            lblChoices.Text = "Answer Choices (Select the correct answer):";
+            lblChoices.Text = "Answer Choices (Select the correct answer): *";
             lblChoices.Font = new Font("Arial", 10, FontStyle.Bold);
             lblChoices.Location = new Point(20, yPos);
-            lblChoices.Size = new Size(350, 20);
+            lblChoices.Size = new Size(450, 20);
             this.Controls.Add(lblChoices);
             yPos += 30;
 
@@ -223,34 +313,143 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             yPos += 50;
 
             // ===== Buttons =====
-            btnSaveAndNext = new Button();
-            btnSaveAndNext.Text = "Save & Add Another";
-            btnSaveAndNext.Location = new Point(280, yPos);
-            btnSaveAndNext.Size = new Size(150, 35);
-            btnSaveAndNext.BackColor = Color.LightGreen;
-            btnSaveAndNext.Font = new Font("Arial", 10, FontStyle.Bold);
-            btnSaveAndNext.Cursor = Cursors.Hand;
-            btnSaveAndNext.Click += BtnSaveAndNext_Click;
-            this.Controls.Add(btnSaveAndNext);
+            if (_isEditMode)
+            {
+                // Edit Mode: Only show Update and Cancel
+                btnSaveAndClose = new Button();
+                btnSaveAndClose.Text = "💾 Update Question";
+                btnSaveAndClose.Location = new Point(370, yPos);
+                btnSaveAndClose.Size = new Size(150, 35);
+                btnSaveAndClose.BackColor = Color.FromArgb(52, 152, 219);
+                btnSaveAndClose.ForeColor = Color.White;
+                btnSaveAndClose.Font = new Font("Arial", 10, FontStyle.Bold);
+                btnSaveAndClose.Cursor = Cursors.Hand;
+                btnSaveAndClose.Click += BtnSaveAndClose_Click;
+                this.Controls.Add(btnSaveAndClose);
 
-            btnSaveAndClose = new Button();
-            btnSaveAndClose.Text = "Save & Finish";
-            btnSaveAndClose.Location = new Point(440, yPos);
-            btnSaveAndClose.Size = new Size(110, 35);
-            btnSaveAndClose.BackColor = Color.LightBlue;
-            btnSaveAndClose.Font = new Font("Arial", 10);
-            btnSaveAndClose.Cursor = Cursors.Hand;
-            btnSaveAndClose.Click += BtnSaveAndClose_Click;
-            this.Controls.Add(btnSaveAndClose);
+                btnCancel = new Button();
+                btnCancel.Text = "Cancel";
+                btnCancel.Location = new Point(530, yPos);
+                btnCancel.Size = new Size(100, 35);
+                btnCancel.BackColor = Color.LightGray;
+                btnCancel.Cursor = Cursors.Hand;
+                btnCancel.Click += (s, e) => { this.DialogResult = DialogResult.Cancel; this.Close(); };
+                this.Controls.Add(btnCancel);
+            }
+            else if (_isQuestionBank)
+            {
+                // Question Bank Mode: Save & Add Another, Save & Close
+                btnSaveAndNext = new Button();
+                btnSaveAndNext.Text = "Save & Add Another";
+                btnSaveAndNext.Location = new Point(280, yPos);
+                btnSaveAndNext.Size = new Size(150, 35);
+                btnSaveAndNext.BackColor = Color.FromArgb(46, 204, 113);
+                btnSaveAndNext.ForeColor = Color.White;
+                btnSaveAndNext.Font = new Font("Arial", 10, FontStyle.Bold);
+                btnSaveAndNext.Cursor = Cursors.Hand;
+                btnSaveAndNext.Click += BtnSaveAndNext_Click;
+                this.Controls.Add(btnSaveAndNext);
 
-            btnCancel = new Button();
-            btnCancel.Text = "Cancel";
-            btnCancel.Location = new Point(560, yPos);
-            btnCancel.Size = new Size(100, 35);
-            btnCancel.BackColor = Color.LightGray;
-            btnCancel.Cursor = Cursors.Hand;
-            btnCancel.Click += (s, e) => this.Close();
-            this.Controls.Add(btnCancel);
+                btnSaveAndClose = new Button();
+                btnSaveAndClose.Text = "Save & Close";
+                btnSaveAndClose.Location = new Point(440, yPos);
+                btnSaveAndClose.Size = new Size(110, 35);
+                btnSaveAndClose.BackColor = Color.FromArgb(52, 152, 219);
+                btnSaveAndClose.ForeColor = Color.White;
+                btnSaveAndClose.Font = new Font("Arial", 10);
+                btnSaveAndClose.Cursor = Cursors.Hand;
+                btnSaveAndClose.Click += BtnSaveAndClose_Click;
+                this.Controls.Add(btnSaveAndClose);
+
+                btnCancel = new Button();
+                btnCancel.Text = "Cancel";
+                btnCancel.Location = new Point(560, yPos);
+                btnCancel.Size = new Size(100, 35);
+                btnCancel.BackColor = Color.LightGray;
+                btnCancel.Cursor = Cursors.Hand;
+                btnCancel.Click += (s, e) => { this.DialogResult = DialogResult.Cancel; this.Close(); };
+                this.Controls.Add(btnCancel);
+            }
+            else
+            {
+                // Test Mode: Original buttons
+                btnSaveAndNext = new Button();
+                btnSaveAndNext.Text = "Save & Add Another";
+                btnSaveAndNext.Location = new Point(280, yPos);
+                btnSaveAndNext.Size = new Size(150, 35);
+                btnSaveAndNext.BackColor = Color.LightGreen;
+                btnSaveAndNext.Font = new Font("Arial", 10, FontStyle.Bold);
+                btnSaveAndNext.Cursor = Cursors.Hand;
+                btnSaveAndNext.Click += BtnSaveAndNext_Click;
+                this.Controls.Add(btnSaveAndNext);
+
+                btnSaveAndClose = new Button();
+                btnSaveAndClose.Text = "Save & Finish";
+                btnSaveAndClose.Location = new Point(440, yPos);
+                btnSaveAndClose.Size = new Size(110, 35);
+                btnSaveAndClose.BackColor = Color.LightBlue;
+                btnSaveAndClose.Font = new Font("Arial", 10);
+                btnSaveAndClose.Cursor = Cursors.Hand;
+                btnSaveAndClose.Click += BtnSaveAndClose_Click;
+                this.Controls.Add(btnSaveAndClose);
+
+                btnCancel = new Button();
+                btnCancel.Text = "Cancel";
+                btnCancel.Location = new Point(560, yPos);
+                btnCancel.Size = new Size(100, 35);
+                btnCancel.BackColor = Color.LightGray;
+                btnCancel.Cursor = Cursors.Hand;
+                btnCancel.Click += (s, e) => this.Close();
+                this.Controls.Add(btnCancel);
+            }
+        }
+
+        private void SetupQuestionBankMode()
+        {
+            // Already handled in InitializeComponent with visibility flags
+        }
+
+        private void LoadQuestionData()
+        {
+            if (_existingQuestion == null) return;
+
+            txtQuestionText.Text = _existingQuestion.QuestionText;
+            if (_isQuestionBank && txtTopic != null)
+                txtTopic.Text = _existingQuestion.Topic ?? "";
+            numPoints.Value = _existingQuestion.PointValue;
+            cmbDifficulty.SelectedIndex = (int)_existingQuestion.DifficultyLevel;
+            cmbCognitive.SelectedIndex = (int)_existingQuestion.CognitiveLevel;
+
+            if (_isQuestionBank && txtExplanation != null)
+                txtExplanation.Text = _existingQuestion.Explanation ?? "";
+
+            // Load choices
+            if (_existingQuestion.Choices != null && _existingQuestion.Choices.Count > 0)
+            {
+                for (int i = 0; i < _existingQuestion.Choices.Count && i < 4; i++)
+                {
+                    var choice = _existingQuestion.Choices[i];
+                    switch (i)
+                    {
+                        case 0:
+                            txtChoiceA.Text = choice.ChoiceText;
+                            rdoCorrectA.Checked = choice.IsCorrect;
+                            break;
+                        case 1:
+                            txtChoiceB.Text = choice.ChoiceText;
+                            rdoCorrectB.Checked = choice.IsCorrect;
+                            break;
+                        case 2:
+                            txtChoiceC.Text = choice.ChoiceText;
+                            rdoCorrectC.Checked = choice.IsCorrect;
+                            break;
+                        case 3:
+                            txtChoiceD.Text = choice.ChoiceText;
+                            rdoCorrectD.Checked = choice.IsCorrect;
+                            break;
+                    }
+                }
+            }
         }
 
         private void BtnSaveAndNext_Click(object sender, EventArgs e)
@@ -260,8 +459,11 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
                 // Clear form for next question
                 ClearForm();
                 _currentQuestionNumber++;
-                lblTitle.Text = $"Question {_currentQuestionNumber}";
-                this.Text = $"Add Question {_currentQuestionNumber}";
+                if (!_isQuestionBank)
+                {
+                    lblTitle.Text = $"Question {_currentQuestionNumber}";
+                    this.Text = $"Add Question {_currentQuestionNumber}";
+                }
                 txtQuestionText.Focus();
             }
         }
@@ -270,14 +472,21 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
         {
             if (SaveQuestion())
             {
-                MessageBox.Show($"Question {_currentQuestionNumber} saved successfully! You can now administer this test to students.",
-                    "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                string message = _isEditMode
+                    ? "Question updated successfully!"
+                    : (_isQuestionBank
+                        ? "Question added to bank successfully!"
+                        : $"Question {_currentQuestionNumber} saved successfully!");
+
+                MessageBox.Show(message, "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
         }
 
-        ///  Saves question directly using QuestionRepository
+        /// <summary>
+        /// Saves question - handles both test questions and question bank
+        /// </summary>
         private bool SaveQuestion()
         {
             // Validation
@@ -298,51 +507,103 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
 
             try
             {
-                // ✅ Create question WITH TestId
-                var question = new MultipleChoiceQuestion
+                if (_isEditMode)
                 {
-                    TestId = _testId, // ✅ USE _testId (with underscore)
-                    QuestionText = txtQuestionText.Text.Trim(),
-                    QuestionType = "MultipleChoice",
-                    PointValue = (int)numPoints.Value,
-                    DifficultyLevel = (DifficultyLevel)Enum.Parse(typeof(DifficultyLevel), cmbDifficulty.SelectedItem.ToString()),
-                    CognitiveLevel = (CognitiveLevel)Enum.Parse(typeof(CognitiveLevel), cmbCognitive.SelectedItem.ToString()),
-                    OrderNumber = _currentQuestionNumber // ✅ USE _currentQuestionNumber (with underscore)
-                };
+                    // UPDATE existing question
+                    _existingQuestion.QuestionText = txtQuestionText.Text.Trim();
+                    _existingQuestion.PointValue = (int)numPoints.Value;
+                    _existingQuestion.DifficultyLevel = (DifficultyLevel)Enum.Parse(typeof(DifficultyLevel), cmbDifficulty.SelectedItem.ToString());
+                    _existingQuestion.CognitiveLevel = (CognitiveLevel)Enum.Parse(typeof(CognitiveLevel), cmbCognitive.SelectedItem.ToString());
 
-                // Add choices
-                int choiceOrder = 1;
-                if (!string.IsNullOrWhiteSpace(txtChoiceA.Text))
-                    question.AddChoice(txtChoiceA.Text.Trim(), rdoCorrectA.Checked, choiceOrder++);
+                    if (_isQuestionBank)
+                    {
+                        _existingQuestion.Topic = txtTopic?.Text.Trim();
+                        _existingQuestion.Explanation = txtExplanation?.Text.Trim();
+                    }
 
-                if (!string.IsNullOrWhiteSpace(txtChoiceB.Text))
-                    question.AddChoice(txtChoiceB.Text.Trim(), rdoCorrectB.Checked, choiceOrder++);
+                    // Update choices
+                    _existingQuestion.Choices.Clear();
+                    int choiceOrder = 1;
+                    if (!string.IsNullOrWhiteSpace(txtChoiceA.Text))
+                        _existingQuestion.AddChoice(txtChoiceA.Text.Trim(), rdoCorrectA.Checked, choiceOrder++);
+                    if (!string.IsNullOrWhiteSpace(txtChoiceB.Text))
+                        _existingQuestion.AddChoice(txtChoiceB.Text.Trim(), rdoCorrectB.Checked, choiceOrder++);
+                    if (!string.IsNullOrWhiteSpace(txtChoiceC.Text))
+                        _existingQuestion.AddChoice(txtChoiceC.Text.Trim(), rdoCorrectC.Checked, choiceOrder++);
+                    if (!string.IsNullOrWhiteSpace(txtChoiceD.Text))
+                        _existingQuestion.AddChoice(txtChoiceD.Text.Trim(), rdoCorrectD.Checked, choiceOrder++);
 
-                if (!string.IsNullOrWhiteSpace(txtChoiceC.Text))
-                    question.AddChoice(txtChoiceC.Text.Trim(), rdoCorrectC.Checked, choiceOrder++);
-
-                if (!string.IsNullOrWhiteSpace(txtChoiceD.Text))
-                    question.AddChoice(txtChoiceD.Text.Trim(), rdoCorrectD.Checked, choiceOrder++);
-
-                // ✅ SAVE DIRECTLY USING QuestionRepository (NOT QuestionBankManager)
-                var questionRepo = new QuestionRepository();
-                int questionId = questionRepo.AddQuestion(question);
-
-                if (questionId > 0)
-                {
-                    return true;
+                    bool success = _questionManager.UpdateQuestion(_existingQuestion, out string error);
+                    if (!success)
+                    {
+                        MessageBox.Show($"Failed to update question: {error}", "Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    return success;
                 }
                 else
                 {
-                    MessageBox.Show("Failed to save question.", "Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return false;
+                    // CREATE new question
+                    var question = new MultipleChoiceQuestion
+                    {
+                        TestId = _testId,  // Will be null for question bank
+                        QuestionText = txtQuestionText.Text.Trim(),
+                        QuestionType = "MultipleChoice",
+                        PointValue = (int)numPoints.Value,
+                        DifficultyLevel = (DifficultyLevel)Enum.Parse(typeof(DifficultyLevel), cmbDifficulty.SelectedItem.ToString()),
+                        CognitiveLevel = (CognitiveLevel)Enum.Parse(typeof(CognitiveLevel), cmbCognitive.SelectedItem.ToString()),
+                        OrderNumber = _currentQuestionNumber
+                    };
+
+                    if (_isQuestionBank)
+                    {
+                        question.Topic = txtTopic?.Text.Trim();
+                        question.Explanation = txtExplanation?.Text.Trim();
+                    }
+
+                    // Add choices
+                    int choiceOrder = 1;
+                    if (!string.IsNullOrWhiteSpace(txtChoiceA.Text))
+                        question.AddChoice(txtChoiceA.Text.Trim(), rdoCorrectA.Checked, choiceOrder++);
+                    if (!string.IsNullOrWhiteSpace(txtChoiceB.Text))
+                        question.AddChoice(txtChoiceB.Text.Trim(), rdoCorrectB.Checked, choiceOrder++);
+                    if (!string.IsNullOrWhiteSpace(txtChoiceC.Text))
+                        question.AddChoice(txtChoiceC.Text.Trim(), rdoCorrectC.Checked, choiceOrder++);
+                    if (!string.IsNullOrWhiteSpace(txtChoiceD.Text))
+                        question.AddChoice(txtChoiceD.Text.Trim(), rdoCorrectD.Checked, choiceOrder++);
+
+                    int questionId;
+                    if (_isQuestionBank)
+                    {
+                        // Save to question bank
+                        questionId = _questionManager.AddToQuestionBank(question, out string error);
+                        if (questionId <= 0)
+                        {
+                            MessageBox.Show($"Failed to add question: {error}", "Error",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        // Save directly to test using repository
+                        var questionRepo = new QuestionRepository();
+                        questionId = questionRepo.AddQuestion(question);
+                        if (questionId <= 0)
+                        {
+                            MessageBox.Show("Failed to save question.", "Error",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return false;
+                        }
+                    }
+
+                    return true;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving question: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error saving question: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
         }
@@ -350,9 +611,11 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
         private void ClearForm()
         {
             txtQuestionText.Clear();
+            if (txtTopic != null) txtTopic.Clear();
             numPoints.Value = 1;
             cmbDifficulty.SelectedIndex = 1;
             cmbCognitive.SelectedIndex = 0;
+            if (txtExplanation != null) txtExplanation.Clear();
             txtChoiceA.Clear();
             txtChoiceB.Clear();
             txtChoiceC.Clear();

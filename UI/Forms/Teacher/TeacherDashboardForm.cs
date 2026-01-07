@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using StudentAssessmentSystem.DataAccess.Repositories;
 using StudentAssessmentSystem.Models.Assessment;
 using StudentAssessmentSystem.Utilities;
+using StudentAssessmentSystem.UI.Forms.Teacher;
 
 namespace StudentAssessmentSystem.UI.Forms.Teacher
 {
@@ -225,6 +226,13 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
             }
         }
 
+        private void BtnQuestionBank_Click(object sender, EventArgs e)
+        {
+            QuestionBankForm form = new QuestionBankForm();
+            form.ShowDialog();
+        }
+
+
         private void BtnMyTests_Click(object sender, EventArgs e)
         {
             try
@@ -237,12 +245,6 @@ namespace StudentAssessmentSystem.UI.Forms.Teacher
                 MessageBox.Show($"Error opening my tests: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        private void BtnQuestionBank_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("Question Bank feature coming soon!", "Info",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void BtnManageQuestions_Click(object sender, EventArgs e)

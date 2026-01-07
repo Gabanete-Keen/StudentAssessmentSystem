@@ -193,6 +193,9 @@
     <Compile Include="UI\Forms\Teacher\PerformanceAnalyzerTestForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="UI\Forms\Teacher\QuestionBankForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="UI\Forms\Teacher\TeacherDashboardForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -200,6 +203,9 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="UI\Forms\Teacher\TestCreationForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\Forms\Teacher\ViewQuestionDetailsForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Utilities\SessionManager.cs" />

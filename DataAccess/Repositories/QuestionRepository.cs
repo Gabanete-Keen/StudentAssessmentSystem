@@ -115,6 +115,137 @@ namespace StudentAssessmentSystem.DataAccess.Repositories
             return questions;
         }
 
+        // ADD THIS METHOD TO YOUR QuestionRepository.cs class
+
+        /// <summary>
+        /// Gets all questions from the question bank (where TestId IS NULL)
+        /// These are reusable questions not assigned to any specific test
+        /// </summary>
+        public List<MultipleChoiceQuestion> GetQuestionBankQuestions()
+        {
+            List<MultipleChoiceQuestion> questions = new List<MultipleChoiceQuestion>();
+
+            try
+            {
+                using (MySqlConnection conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+
+                    // Get questions where TestId is NULL (question bank only)
+                    string query = @"SELECT * FROM Questions 
+                           WHERE TestId IS NULL 
+                           ORDER BY Topic, DifficultyLevel, QuestionId";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    {
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var question = MapReaderToQuestion(reader);
+                                questions.Add(question);
+                            }
+                        }
+                    }
+
+                    // Get choices for each question
+                    foreach (var question in questions)
+                    {
+                        question.Choices = GetChoicesByQuestion(conn, question.QuestionId);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error getting question bank questions: {ex.Message}", ex);
+            }
+
+            return questions;
+        }
+
+        /// Gets questions with choices that can be updated (including update to choices)
+        /// This is an enhanced update that also handles choice modifications
+        public bool UpdateQuestionWithChoices(int questionId, MultipleChoiceQuestion question)
+        {
+            try
+            {
+                using (MySqlConnection conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+
+                    using (MySqlTransaction transaction = conn.BeginTransaction())
+                    {
+                        try
+                        {
+                            // Update question
+                            string questionQuery = @"UPDATE Questions SET 
+                                           QuestionText = @QuestionText,
+                                           PointValue = @PointValue,
+                                           DifficultyLevel = @DifficultyLevel,
+                                           CognitiveLevel = @CognitiveLevel,
+                                           Topic = @Topic,
+                                           Explanation = @Explanation
+                                           WHERE QuestionId = @QuestionId";
+
+                            using (MySqlCommand cmd = new MySqlCommand(questionQuery, conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@QuestionId", questionId);
+                                cmd.Parameters.AddWithValue("@QuestionText", question.QuestionText);
+                                cmd.Parameters.AddWithValue("@PointValue", question.PointValue);
+                                cmd.Parameters.AddWithValue("@DifficultyLevel", question.DifficultyLevel.ToString());
+                                cmd.Parameters.AddWithValue("@CognitiveLevel", question.CognitiveLevel.ToString());
+                                cmd.Parameters.AddWithValue("@Topic", question.Topic ?? "");
+                                cmd.Parameters.AddWithValue("@Explanation", question.Explanation ?? "");
+
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            // Delete existing choices
+                            string deleteChoices = "DELETE FROM QuestionChoices WHERE QuestionId = @QuestionId";
+                            using (MySqlCommand cmd = new MySqlCommand(deleteChoices, conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@QuestionId", questionId);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            // Insert new choices
+                            if (question.Choices != null && question.Choices.Count > 0)
+                            {
+                                foreach (var choice in question.Choices)
+                                {
+                                    string choiceQuery = @"INSERT INTO QuestionChoices 
+                                                 (QuestionId, ChoiceText, IsCorrect, OrderNumber)
+                                                 VALUES 
+                                                 (@QuestionId, @ChoiceText, @IsCorrect, @OrderNumber)";
+
+                                    using (MySqlCommand cmd = new MySqlCommand(choiceQuery, conn, transaction))
+                                    {
+                                        cmd.Parameters.AddWithValue("@QuestionId", questionId);
+                                        cmd.Parameters.AddWithValue("@ChoiceText", choice.ChoiceText);
+                                        cmd.Parameters.AddWithValue("@IsCorrect", choice.IsCorrect);
+                                        cmd.Parameters.AddWithValue("@OrderNumber", choice.OrderNumber);
+                                        cmd.ExecuteNonQuery();
+                                    }
+                                }
+                            }
+
+                            transaction.Commit();
+                            return true;
+                        }
+                        catch
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error updating question with choices: {ex.Message}", ex);
+            }
+        }
+
 
         /// Get question by ID
         public MultipleChoiceQuestion GetQuestionById(int questionId)
