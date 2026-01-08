@@ -61,7 +61,7 @@ namespace StudentAssessmentSystem.UI.Forms.Admin
 
             // Welcome Label
             lblWelcome = new Label();
-            lblWelcome.Text = "Welcome, Administrator!";
+            lblWelcome.Text = "Welcome, System Administrator!";
             lblWelcome.Font = new Font("Arial", 16, FontStyle.Bold);
             lblWelcome.Location = new Point(20, 20);
             lblWelcome.Size = new Size(450, 30);
@@ -69,7 +69,7 @@ namespace StudentAssessmentSystem.UI.Forms.Admin
 
             // Info
             lblInfo = new Label();
-            lblInfo.Text = "System Administration Panel";
+            lblInfo.Text = "Access Level: 3";
             lblInfo.Location = new Point(20, 55);
             lblInfo.Size = new Size(450, 20);
             lblInfo.Font = new Font("Arial", 10);
@@ -83,7 +83,7 @@ namespace StudentAssessmentSystem.UI.Forms.Admin
             grpActions.Font = new Font("Arial", 10, FontStyle.Bold);
             this.Controls.Add(grpActions);
 
-            // Manage Users Button
+            // Manage Users Button - FIXED
             btnManageUsers = new Button();
             btnManageUsers.Text = "Manage Users";
             btnManageUsers.Location = new Point(40, 40);
@@ -91,7 +91,7 @@ namespace StudentAssessmentSystem.UI.Forms.Admin
             btnManageUsers.Font = new Font("Arial", 10, FontStyle.Bold);
             btnManageUsers.BackColor = Color.LightBlue;
             btnManageUsers.Cursor = Cursors.Hand;
-            btnManageUsers.Click += (s, e) => MessageBox.Show("Manage Users coming soon!", "Info");
+            btnManageUsers.Click += BtnManageUsers_Click; 
             grpActions.Controls.Add(btnManageUsers);
 
             // Manage Subjects Button
@@ -102,7 +102,7 @@ namespace StudentAssessmentSystem.UI.Forms.Admin
             btnManageSubjects.Font = new Font("Arial", 10, FontStyle.Bold);
             btnManageSubjects.BackColor = Color.LightGreen;
             btnManageSubjects.Cursor = Cursors.Hand;
-            btnManageSubjects.Click += (s, e) => MessageBox.Show("Manage Subjects coming soon!", "Info");
+            btnManageSubjects.Click += BtnManageSubjects_Click;
             grpActions.Controls.Add(btnManageSubjects);
 
             // View Reports Button
@@ -127,6 +127,22 @@ namespace StudentAssessmentSystem.UI.Forms.Admin
             this.Controls.Add(btnLogout);
         }
 
+        //  Opens Manage Users Form
+        private void BtnManageUsers_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ManageUsersForm form = new ManageUsersForm();
+                form.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening user management: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+
         private void BtnLogout_Click(object sender, EventArgs e)
         {
             try
@@ -150,6 +166,19 @@ namespace StudentAssessmentSystem.UI.Forms.Admin
             catch (Exception ex)
             {
                 MessageBox.Show($"Error during logout:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private void BtnManageSubjects_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ManageSubjectsForm form = new ManageSubjectsForm();
+                form.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening subject management: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

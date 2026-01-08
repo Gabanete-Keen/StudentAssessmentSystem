@@ -107,6 +107,7 @@
     <Compile Include="BusinessLogic\Analysis\StatisticsCalculator.cs" />
     <Compile Include="BusinessLogic\Managers\QuestionBankManager.cs" />
     <Compile Include="BusinessLogic\Managers\ScoringManager.cs" />
+    <Compile Include="BusinessLogic\Managers\SubjectManager.cs" />
     <Compile Include="BusinessLogic\Managers\TestManager.cs" />
     <Compile Include="BusinessLogic\Managers\TestTakingManager.cs" />
     <Compile Include="BusinessLogic\Managers\UserManager.cs" />
@@ -120,6 +121,7 @@
     <Compile Include="DataAccess\Repositories\SectionRepository.cs" />
     <Compile Include="DataAccess\Repositories\StudentAnswerRepository.cs" />
     <Compile Include="DataAccess\Repositories\StudentRepository.cs" />
+    <Compile Include="DataAccess\Repositories\SubjectRepository.cs" />
     <Compile Include="DataAccess\Repositories\TestInstanceRepository.cs" />
     <Compile Include="DataAccess\Repositories\TestRepository.cs" />
     <Compile Include="DataAccess\Repositories\TestResultRepository.cs" />
@@ -148,7 +150,19 @@
     <Compile Include="Models\Users\User.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UI\Admin\AddEditSubjectForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\Admin\AddEditUserForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="UI\Admin\AdminDashboardForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\Admin\ManageSubjectsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\Admin\ManageUsersForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="UI\Forms\LoginForm.cs">
